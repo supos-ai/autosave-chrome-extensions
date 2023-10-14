@@ -1,0 +1,27 @@
+{
+  "name": "indexdb",
+  "version": "1.0.0",
+  "description": "for indexdb api.",
+  "private": true,
+  "author": "sunzhiqi <sunzhiqi@live.com>",
+  "homepage": "https://github.com/supos-ai/autosave-chrome-extensions#readme",
+  "license": "ISC",
+  "main": "build/index.js",
+  "types": "build/types/index.d.ts",
+  "directories": {
+    "src": "src"
+  },
+  "files": [
+    "build"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supos-ai/autosave-chrome-extensions.git"
+  },
+  "scripts": {
+    "dev": "rimraf build && rollup -c --watch && yarn build:type"
+  },
+  "bugs": {
+    "url": "https://github.com/supos-ai/autosave-chrome-extensions/issues"
+  }
+}

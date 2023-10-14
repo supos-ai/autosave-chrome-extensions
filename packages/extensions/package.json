@@ -1,0 +1,37 @@
+{
+  "name": "extensions",
+  "version": "1.0.0",
+  "description": "supOS scripts and services autosave chrome extensions.",
+  "keywords": [
+    "supos",
+    "autosave",
+    "extensions"
+  ],
+  "author": "sunzhiqi <sunzhiqi@live.com>",
+  "homepage": "https://github.com/supos-ai/autosave-chrome-extensions#readme",
+  "license": "MIT",
+  "directories": {
+    "lib": "src",
+    "test": "__tests__"
+  },
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supos-ai/autosave-chrome-extensions.git"
+  },
+  "scripts": {
+    "test": "jest",
+    "dev": "rimraf build && rollup -c --watch",
+    "build": "rimraf build && rollup -c"
+  },
+  "bugs": {
+    "url": "https://github.com/supos-ai/autosave-chrome-extensions/issues"
+  },
+  "dependencies": {
+    "@types/chrome": "^0.0.246",
+    "indexdb": "*",
+    "proxy": "*"
+  }
+}

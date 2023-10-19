@@ -117,18 +117,22 @@ const chromeMessageHandler = async (props: MessageData) => {
         ...payload,
         ...ePayload,
       },
-    });
+    })
   }
 
   if (messageFlow.to === "service") {
-    chrome.runtime.sendMessage({
-      ...props,
-      ...messageFlow,
-      payload: {
-        ...payload,
-        ...ePayload,
-      },
-    });
+    try {
+      chrome.runtime.sendMessage({
+        ...props,
+        ...messageFlow,
+        payload: {
+          ...payload,
+          ...ePayload,
+        },
+      });
+    } catch (err) {
+      console.debug(`[ ${messageFlow.from} =>  ${messageFlow.to}]`, props, err);
+    }
   }
 };
 const windowMessageHandler = async (event: MessageEvent) => {

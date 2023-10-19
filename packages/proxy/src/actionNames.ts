@@ -8,4 +8,11 @@ export default {
   onChange: "内容改变",
   onFocus: "获取焦点",
   onBlur: "失去交点",
+
+  click:"单击",
+  didMount:"组件加载完成",
+  interfaceAfter:"接口加载完成",
+  
+  onClick:"单击",
+  onDoubleClick:"双击"
 };

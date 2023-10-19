@@ -1,25 +1,24 @@
 import { dbClient } from "indexdb";
 
-import * as config from "./config";
+import { dbConfig } from "extensions-config";
 
-const initDB = () => {
-  const client = dbClient(config.DB_NAME, config.DB_VERSION);
-
+const init = () => {
+  const client = dbClient(dbConfig.DB_NAME, dbConfig.DB_VERSION);
   client.onupgradeneeded((e: Event) => {
     const db = (e?.target as any).result as IDBDatabase;
 
     let store: IDBObjectStore;
 
     const isScriptsStoreExist = db.objectStoreNames.contains(
-      config.SCRIPTS_STORE_NAME
+      dbConfig.SCRIPTS_STORE_NAME
     );
 
     if (isScriptsStoreExist) {
       store = (e?.target as any).transaction.objectStore(
-        config.SCRIPTS_STORE_NAME
+        dbConfig.SCRIPTS_STORE_NAME
       );
     } else {
-      store = db.createObjectStore(config.SCRIPTS_STORE_NAME, {
+      store = db.createObjectStore(dbConfig.SCRIPTS_STORE_NAME, {
         keyPath: "id",
       });
     }
@@ -40,15 +39,15 @@ const initDB = () => {
     });
 
     const isServiceStoreExist = db.objectStoreNames.contains(
-      config.SERVICE_STORE_NAME
+      dbConfig.SERVICE_STORE_NAME
     );
 
     if (isServiceStoreExist) {
       store = (e?.target as any).transaction.objectStore(
-        config.SERVICE_STORE_NAME
+        dbConfig.SERVICE_STORE_NAME
       );
     } else {
-      store = db.createObjectStore(config.SERVICE_STORE_NAME, {
+      store = db.createObjectStore(dbConfig.SERVICE_STORE_NAME, {
         keyPath: "id",
       });
     }
@@ -74,4 +73,5 @@ const initDB = () => {
   });
 };
 
-export default initDB;
+
+export { init };

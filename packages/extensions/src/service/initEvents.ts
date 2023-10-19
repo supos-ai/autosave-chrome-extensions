@@ -1,8 +1,6 @@
 import { messageAction, messageType } from "extensions-config";
 
-import nextMessageFlow from "./utils/nextMessageFlow";
-
-import type { MessageData } from "./interface";
+import nextMessageFlow from "../utils/nextMessageFlow";
 
 let popupConfig: {
   popupWindow: chrome.windows.Window | null;
@@ -32,18 +30,12 @@ const createPopupWindow = async (currentTab: chrome.tabs.Tab) => {
 };
 
 const getPopupWindow = () => popupConfig;
-const resetPopupWindow = () => {
-  popupConfig = {
-    popupWindow: null,
-    fromTabId: -1,
-  };
+
+const destroyPopUpWindow = () => {
+  chrome.windows.remove(popupConfig.popupWindow?.id!);
 };
 
-const destroyPopUpWindow = async () => {
-  try {
-    await chrome.windows.remove(popupConfig.popupWindow?.id!);
-  } catch {}
-};
+import type { MessageData } from "../interface";
 
 const setIconWithConnectStatus = (isConnected: boolean, tabId?: number) => {
   if (isConnected) {
@@ -87,14 +79,10 @@ const handlerChromeMessage = async (
   }
 
   if (messageFlow.to === "popup") {
-    try {
-      await chrome.runtime.sendMessage({
-        ...props,
-        ...messageFlow,
-      });
-    } catch (err) {
-      console.error(`[ ${messageFlow.from} =>  ${messageFlow.to}]`, err);
-    }
+    chrome.runtime.sendMessage({
+      ...props,
+      ...messageFlow,
+    });
   }
 
   /**
@@ -181,11 +169,11 @@ const handlerOnActionClick = async () => {
   createPopupWindow(currentTab);
 };
 
-// chrome.runtime.onInstalled.addListener(() => {
-//   chrome.tabs.create({
-//     url: "app/guide.html",
-//   });
-// });
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.tabs.create({
+    url: "app/guide.html",
+  });
+});
 
 const handlerOnTabRemove = (
   tabId: number,
@@ -195,14 +183,16 @@ const handlerOnTabRemove = (
 
   if (fromTabId === tabId) {
     destroyPopUpWindow();
-    resetPopupWindow();
-  }
 
-  if (popupConfig.popupWindow?.id === tabId) {
-    resetPopupWindow();
+    popupConfig = {
+      popupWindow: null,
+      fromTabId: -1,
+    };
   }
 };
-chrome.tabs.onRemoved.addListener(handlerOnTabRemove);
-//   chrome.tabs.onActivated.addListener(handlerOnTabActivated);
-chrome.runtime.onMessage.addListener(handlerChromeMessage);
-chrome.action.onClicked.addListener(handlerOnActionClick);
+export default () => {
+  chrome.tabs.onRemoved.addListener(handlerOnTabRemove);
+  // chrome.tabs.onActivated.addListener(handlerOnTabActivated);
+  chrome.runtime.onMessage.addListener(handlerChromeMessage);
+  chrome.action.onClicked.addListener(handlerOnActionClick);
+};

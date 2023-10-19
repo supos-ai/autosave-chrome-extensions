@@ -1,9 +1,10 @@
 import { dbClient } from "indexdb";
+
+import { dbConfig } from "extensions-config";
 import interceptorList from "./interceptorList";
 
 import scriptsParse from "./scriptsParse";
 import serviceParse from "./serviceParse";
-import * as config from "./config";
 
 import type { ScriptsDataProps } from "./scriptsParse";
 import type { ServiceDataProps } from "./serviceParse";
@@ -30,12 +31,12 @@ export const propsHandler = (...args: Parameters<typeof fetch>) => {
   }
 };
 
-const client = dbClient(config.DB_NAME, config.DB_VERSION);
+const client = dbClient(dbConfig.DB_NAME, dbConfig.DB_VERSION);
 
 const saveScripts = (dataQueue: ScriptsDataProps[]) => {
   dataQueue.forEach(async (data) => {
     try {
-      await client.add(config.SCRIPTS_STORE_NAME, data);
+      await client.add(dbConfig.SCRIPTS_STORE_NAME, data);
     } catch (err) {
       console.error(err);
     }
@@ -44,7 +45,7 @@ const saveScripts = (dataQueue: ScriptsDataProps[]) => {
 const saveService = (dataQueue: ServiceDataProps[]) => {
   dataQueue.forEach(async (data) => {
     try {
-      await client.add(config.SERVICE_STORE_NAME, data);
+      await client.add(dbConfig.SERVICE_STORE_NAME, data);
     } catch (err) {
       console.debug(err);
     }
@@ -55,10 +56,10 @@ const handleContent = async ({
   type,
   payload,
 }: {
-  type: "service" | "layout";
+  type: "service" | "script";
   payload: RequestInit | undefined;
 }) => {
-  if (type === "layout") {
+  if (type === "script") {
     const dataQueue = await scriptsParse(payload);
 
     saveScripts(dataQueue);
@@ -66,7 +67,6 @@ const handleContent = async ({
 
   if (type === "service") {
     const dataQueue = serviceParse(payload);
-    console.log(dataQueue);
     saveService(dataQueue);
   }
 };

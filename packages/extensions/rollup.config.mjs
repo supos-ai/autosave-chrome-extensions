@@ -9,7 +9,7 @@ export default [
     output: {
       file: "build/service_worker.js",
       format: "iife",
-      sourcemap: true,
+      name: "service_worker",
     },
     plugins: [
       copy({
@@ -21,7 +21,7 @@ export default [
       }),
       terser(),
       typescript(),
-
+      nodeResolve(),
       {
         buildStart() {
           this.addWatchFile("./src/manifest.json");
@@ -34,21 +34,17 @@ export default [
     output: {
       file: "build/content.js",
       format: "iife",
-      sourcemap: true,
+      name: "content",
     },
-    plugins: [terser(), typescript()],
+    plugins: [terser(), typescript(), nodeResolve()],
   },
   {
     input: "src/document.ts",
     output: {
       file: "build/document.js",
       format: "iife",
-      sourcemap: true,
+      name: "document",
     },
-    plugins: [
-      typescript(),
-      terser(),
-      nodeResolve(),
-    ],
+    plugins: [typescript(), terser(), nodeResolve()],
   },
 ];

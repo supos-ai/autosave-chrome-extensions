@@ -1,1 +1,0 @@
-export const CHECK_CONNECT = "CHECK_CONNECT";

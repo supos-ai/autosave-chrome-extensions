@@ -12,7 +12,11 @@ export interface DBClient {
   ): void;
   onerror(handler?: () => void): void;
   add(storeName: string, data: any): Promise<any>;
-  get(storeName: string, callback: (store: IDBObjectStore) => void): any;
+  get(
+    storeName: string,
+    callback: (store: IDBObjectStore) => any
+  ): Promise<any>;
+  getCount(storeName: string): Promise<any>;
 }
 
 export class Client implements DBClient {
@@ -95,13 +99,30 @@ export class Client implements DBClient {
     });
   }
 
-  async get(storeName: string, callback: (store: IDBObjectStore) => void) {
+  async get(
+    storeName: string,
+    callback: (store: IDBObjectStore) => any
+  ): Promise<any> {
     const db = await this.db;
     if (!db) throw new Error("db connect error");
 
-    const store = db.transaction(storeName, "readwrite").objectStore(storeName);
+    const store = db.transaction(storeName, "readonly").objectStore(storeName);
 
     return callback(store);
+  }
+
+  async getCount(storeName: string): Promise<any> {
+    const db = await this.db;
+    if (!db) throw new Error("db connect error");
+
+    const store = db.transaction(storeName, "readonly").objectStore(storeName);
+
+    const request = store.count();
+
+    return new Promise((resolve, reject) => {
+      request.onsuccess = resolve;
+      request.onerror = reject;
+    });
   }
 }
 

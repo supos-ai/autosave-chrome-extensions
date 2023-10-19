@@ -1,38 +1,29 @@
 {
-  "name": "proxy",
+  "name": "extensions-config",
   "version": "1.0.0",
-  "description": "rewrite fetch for proxy",
+  "description": "extensions config for autosave chrome extensions",
   "private": true,
   "keywords": [
-    "proxy",
-    "fetch"
+    "extensions",
+    "config"
   ],
   "author": "sunzhiqi <sunzhiqi@live.com>",
   "homepage": "https://github.com/supos-ai/autosave-chrome-extensions#readme",
   "license": "ISC",
-  "directories": {
-    "src": "src"
-  },
-  "files": [
-    "src"
-  ],
-  "main": "./build/index.js",
+  "main": "build/index.js",
   "types": "./build/types/index.d.ts",
+  "directories": {
+    "lib": "src"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/supos-ai/autosave-chrome-extensions.git"
   },
   "scripts": {
-    "test": "jest",
-    "dev": "rimraf build && rollup -c --watch && yarn build:type",
-    "build": "rimraf build && rollup -c && yarn build:type",
-    "build:type": "tsc -b ."
+    "dev": "rimraf build && rollup -c --watch",
+    "build": "rimraf build && rollup -c"
   },
   "bugs": {
     "url": "https://github.com/supos-ai/autosave-chrome-extensions/issues"
-  },
-  "dependencies": {
-    "extensions-config": "*",
-    "indexdb": "*"
   }
 }

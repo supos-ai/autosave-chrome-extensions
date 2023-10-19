@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Layout, Input, Divider, Drawer, Tag, List } from "antd";
 
 import { GithubOutlined, QuestionCircleOutlined } from "@ant-design/icons";
-import HistoryTable from "./HistoryTable";
+import HistoryContent from "./HistoryContent";
 
 import "./App.css";
+import "prismjs/themes/prism.css";
 
 const { Footer, Sider, Content } = Layout;
 
@@ -30,18 +31,11 @@ const App: React.FC = () => {
   const drawerClose = () => {
     setOpen(false);
   };
+
   return (
     <Layout className="layout">
       <Content className="content">
-        <div className="resize-content">
-          <div className="left" style={{ flex: 1 }}>
-            <HistoryTable />
-          </div>
-          {/* <Divider className="resize-divider" type="vertical" />
-          <div className="right" style={{ flex: 1 }}>
-            right
-          </div> */}
-        </div>
+        <HistoryContent />
         <Drawer
           title="FAQ"
           placement="right"
@@ -63,13 +57,6 @@ const App: React.FC = () => {
             )}
           />
         </Drawer>
-
-        <QuestionCircleOutlined
-          color="volcano"
-          style={{ fontSize: 40, color: "#d4380d" }}
-          className="faq-icon"
-          onClick={drawerOpen}
-        />
       </Content>
 
       <Footer className="footer">
@@ -83,6 +70,12 @@ const App: React.FC = () => {
             Github
           </Tag>
         </div>
+        <QuestionCircleOutlined
+          color="volcano"
+          style={{ fontSize: 40, color: "#d4380d" }}
+          className="faq-icon"
+          onClick={drawerOpen}
+        />
       </Footer>
     </Layout>
   );

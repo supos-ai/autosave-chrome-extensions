@@ -20,7 +20,7 @@ export default [
     method: ["PUT", "POST"],
   },
   {
-    type: "layout",
+    type: "script",
     reg: /\/api\/compose\/manage\/layouts\/Layout_\w+(?:\?=.+)?/gi,
     method: ["PUT"],
   },

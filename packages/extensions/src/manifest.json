@@ -16,7 +16,6 @@
   ],
   "action": {
     "default_title": "supOS scripts autosave",
-    "default_popup": "views/popup.html",
     "default_icon": {
       "64": "icons/64.png",
       "128": "icons/128.png"

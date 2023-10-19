@@ -1,14 +1,12 @@
-import { fetchProxy, originFetch, XHRProxy, originXHR, initDB } from "proxy";
+import { fetchProxy, originFetch, XHRProxy, originXHR } from "proxy";
 
-import { DOCUMENT_TO_CONTENT, CONTENT_TO_DOCUMENT } from "./utils/messageType";
+import { messageAction, messageType } from "extensions-config";
 
-import { CHECK_CONNECT } from "./utils/actionType";
+import nextMessageFlow from "./utils/nextMessageFlow";
 
-import type { MessageProps } from "./utils/interface";
+import * as db from "./utils/db";
 
-//  初始化数据ku
-
-initDB();
+import type { MessageData } from "./interface";
 
 const bindInstance = (isConnected: boolean) => {
   if (isConnected) {
@@ -21,36 +19,75 @@ const bindInstance = (isConnected: boolean) => {
 };
 
 // 防止被监控网站自己缓存fetch对象， 所以在资源加载后立即重写fetch方法
+
 bindInstance(true);
 
-const checkSuposConnect = () => {
+const checkConnect = () => {
   const win = (window as any).top || (window as any);
   return win.SUPOS !== undefined && win.SUPOS !== null;
 };
 
-const handleSuposConnect = () => {
-  const isConnected = checkSuposConnect();
-
-  bindInstance(isConnected);
-
-  window.postMessage(
-    {
-      messageType: DOCUMENT_TO_CONTENT,
-      actionType: CHECK_CONNECT,
-      payload: {
-        isConnected,
-      },
-    },
-    "*"
-  );
-};
 const windowMessageHandler = (event: MessageEvent) => {
-  if (event.source === window && event.data) {
-    const { actionType, messageType } = event.data as MessageProps;
-    if (actionType === CHECK_CONNECT && messageType === CONTENT_TO_DOCUMENT) {
-      handleSuposConnect();
+  if (event.source !== window) return;
+
+  if (!event.data) return;
+
+  if (event.data.type !== messageType.MESSAGE_TYPE) return;
+
+  const { to, action, payload } = event.data as MessageData;
+
+  let ePayload: any = null;
+
+  if (to === "document") {
+    if (action === messageAction.CHECK_CONNECT_POPUP) {
+      const isConnected = checkConnect();
+      ePayload = {
+        isConnected,
+        host: isConnected ? location.host : null,
+      };
     }
   }
+
+  const messageFlow = nextMessageFlow(event.data);
+
+  if (messageFlow.to === "content") {
+    window.postMessage({
+      ...event.data,
+      ...messageFlow,
+      payload: {
+        ...payload,
+        ...ePayload,
+      },
+    });
+  }
+
 };
 
 window.addEventListener("message", windowMessageHandler);
+
+/**
+ * 页面加载后检测是否是 supOS 网站， 并发送消息通知 service_worker
+ */
+
+const handleSupOSConnectOnWindowLoad = () => {
+  const url = new URL(location.href);
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+  const isConnected = checkConnect();
+
+  if (isConnected) db.init();
+  bindInstance(isConnected);
+
+  window.postMessage({
+    type: messageType.MESSAGE_TYPE,
+    action: messageAction.CHECK_CONNECT_ACTION,
+    path: "document.content.service",
+    from: "document",
+    to: "content",
+    payload: {
+      isConnected,
+      host: isConnected ? location.host : null,
+    },
+  });
+};
+
+window.addEventListener("load", handleSupOSConnectOnWindowLoad);

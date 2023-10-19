@@ -1,4 +1,3 @@
-import actionNames from "./actionNames";
 
 import { cid } from "./utils";
 
@@ -19,6 +18,8 @@ const serviceParse = (payload: RequestInit | undefined): ServiceDataProps[] => {
 
   const context = JSON.parse(body as string);
 
+  // 可能是删除操作， 需要将 url 正则匹配路径改为精确的匹配
+  if (!context.enName && !context.displayName) return dataQueue;
   dataQueue.push({
     serviceName: context.displayName,
     serviceId: context.enName,

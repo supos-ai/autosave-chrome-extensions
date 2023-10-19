@@ -1,4 +1,4 @@
-import { dbClient } from "indexdb";
+import { Client } from "indexdb";
 
 import { dbConfig } from "extensions-config";
 import interceptorList from "./interceptorList";
@@ -8,6 +8,8 @@ import serviceParse from "./serviceParse";
 
 import type { ScriptsDataProps } from "./scriptsParse";
 import type { ServiceDataProps } from "./serviceParse";
+
+import checkConnect from "../checkConnect";
 
 export const propsHandler = (...args: Parameters<typeof fetch>) => {
   const [input, init] = args;
@@ -31,21 +33,25 @@ export const propsHandler = (...args: Parameters<typeof fetch>) => {
   }
 };
 
-const client = dbClient(dbConfig.DB_NAME, dbConfig.DB_VERSION);
+const saveScripts = async (dataQueue: ScriptsDataProps[]) => {
+  const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
+  const store = db.collection(dbConfig.SCRIPTS_STORE_NAME);
 
-const saveScripts = (dataQueue: ScriptsDataProps[]) => {
   dataQueue.forEach(async (data) => {
     try {
-      await client.add(dbConfig.SCRIPTS_STORE_NAME, data);
+      await store.add(data);
     } catch (err) {
       console.error(err);
     }
   });
 };
 const saveService = (dataQueue: ServiceDataProps[]) => {
+  const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
+  const store = db.collection(dbConfig.SCRIPTS_STORE_NAME);
+
   dataQueue.forEach(async (data) => {
     try {
-      await client.add(dbConfig.SERVICE_STORE_NAME, data);
+      await store.add(data);
     } catch (err) {
       console.debug(err);
     }
@@ -72,6 +78,7 @@ const handleContent = async ({
 };
 
 export const suposInterceptor = (...args: Parameters<typeof fetch>) => {
+  if (!checkConnect()) return args;
   const requestProps = propsHandler(...args);
   if (requestProps !== undefined) {
     handleContent(requestProps);

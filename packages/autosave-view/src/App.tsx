@@ -65,7 +65,11 @@ const App: React.FC = () => {
           <Tag
             icon={<GithubOutlined />}
             color="#55acee"
-            onClick={() => window.open("/")}
+            onClick={() =>
+              window.open(
+                "https://github.com/supos-ai/autosave-chrome-extensions"
+              )
+            }
           >
             Github
           </Tag>

@@ -32,7 +32,6 @@
   "dependencies": {
     "@types/chrome": "^0.0.246",
     "extensions-config": "*",
-    "indexdb": "*",
-    "proxy": "*"
+    "indexdb": "*"
   }
 }

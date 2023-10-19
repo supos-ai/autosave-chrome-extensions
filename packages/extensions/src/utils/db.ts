@@ -1,77 +1,65 @@
-import { dbClient } from "indexdb";
+import { Client } from "indexdb";
 
 import { dbConfig } from "extensions-config";
 
-const init = () => {
-  const client = dbClient(dbConfig.DB_NAME, dbConfig.DB_VERSION);
-  client.onupgradeneeded((e: Event) => {
-    const db = (e?.target as any).result as IDBDatabase;
+// let clientInstance: Client | null;
 
-    let store: IDBObjectStore;
+// export const dbClient = (name: string, version: number = 1) => {
+//   if (
+//     clientInstance &&
+//     clientInstance.name === name &&
+//     clientInstance.version === version
+//   ) {
+//     return clientInstance;
+//   } else {
+//     return (clientInstance = new Client(name, version));
+//   }
+// };
 
-    const isScriptsStoreExist = db.objectStoreNames.contains(
-      dbConfig.SCRIPTS_STORE_NAME
-    );
-
-    if (isScriptsStoreExist) {
-      store = (e?.target as any).transaction.objectStore(
-        dbConfig.SCRIPTS_STORE_NAME
-      );
-    } else {
-      store = db.createObjectStore(dbConfig.SCRIPTS_STORE_NAME, {
+export const init = () => {
+  const updateOptions = [
+    {
+      storeName: dbConfig.SCRIPTS_STORE_NAME,
+      option: {
         keyPath: "id",
-      });
-    }
-
-    [
-      {
-        keyPath: "widgetId",
-        name: "widgetIdIndex",
       },
-      {
-        keyPath: "createAt",
-        name: "createAtIndex",
-      },
-    ].forEach(({ name, keyPath }) => {
-      if (!store.indexNames.contains(name)) {
-        store.createIndex(name, keyPath, { unique: false });
-      }
-    });
-
-    const isServiceStoreExist = db.objectStoreNames.contains(
-      dbConfig.SERVICE_STORE_NAME
-    );
-
-    if (isServiceStoreExist) {
-      store = (e?.target as any).transaction.objectStore(
-        dbConfig.SERVICE_STORE_NAME
-      );
-    } else {
-      store = db.createObjectStore(dbConfig.SERVICE_STORE_NAME, {
+      index: [
+        {
+          keyPath: "widgetId",
+          name: "widgetIdIndex",
+          unique: false,
+        },
+        {
+          keyPath: "createAt",
+          name: "createAtIndex",
+          unique: false,
+        },
+      ],
+    },
+    {
+      storeName: dbConfig.SERVICE_STORE_NAME,
+      option: {
         keyPath: "id",
-      });
-    }
+      },
+      index: [
+        {
+          keyPath: "serviceName",
+          name: "serviceNameIndex",
+          unique: false,
+        },
+        {
+          keyPath: "serviceId",
+          name: "serviceIdIndex",
+          unique: false,
+        },
+        {
+          keyPath: "createAt",
+          name: "createAtIndex",
+          unique: false,
+        },
+      ],
+    },
+  ];
 
-    [
-      {
-        keyPath: "serviceName",
-        name: "serviceNameIndex",
-      },
-      {
-        keyPath: "serviceId",
-        name: "serviceIdIndex",
-      },
-      {
-        keyPath: "createAt",
-        name: "createAtIndex",
-      },
-    ].forEach(({ name, keyPath }) => {
-      if (!store.indexNames.contains(name)) {
-        store.createIndex(name, keyPath, { unique: false });
-      }
-    });
-  });
+  new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION, updateOptions);
 };
-
-
-export { init };

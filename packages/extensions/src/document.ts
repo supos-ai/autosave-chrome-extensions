@@ -1,10 +1,16 @@
-import { fetchProxy, originFetch, XHRProxy, originXHR } from "proxy";
+import {
+  fetchProxy,
+  originFetch,
+  XHRProxy,
+  originXHR,
+} from "./utils/proxy/index";
 
 import { messageAction, messageType } from "extensions-config";
 
 import nextMessageFlow from "./utils/nextMessageFlow";
 
 import * as db from "./utils/db";
+import checkConnect from "./utils/checkConnect";
 
 import type { MessageData } from "./interface";
 
@@ -21,11 +27,6 @@ const bindInstance = (isConnected: boolean) => {
 // 防止被监控网站自己缓存fetch对象， 所以在资源加载后立即重写fetch方法
 
 bindInstance(true);
-
-const checkConnect = () => {
-  const win = (window as any).top || (window as any);
-  return win.SUPOS !== undefined && win.SUPOS !== null;
-};
 
 const windowMessageHandler = (event: MessageEvent) => {
   if (event.source !== window) return;
@@ -60,7 +61,6 @@ const windowMessageHandler = (event: MessageEvent) => {
       },
     });
   }
-
 };
 
 window.addEventListener("message", windowMessageHandler);

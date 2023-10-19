@@ -19,7 +19,9 @@
     "url": "git+https://github.com/supos-ai/autosave-chrome-extensions.git"
   },
   "scripts": {
-    "dev": "rimraf build && rollup -c --watch && yarn build:type"
+    "dev": "rimraf build && rollup -c --watch && yarn build:type",
+    "build": "rimraf build && rollup -c && yarn build:type",
+    "build:type": "tsc -b ."
   },
   "bugs": {
     "url": "https://github.com/supos-ai/autosave-chrome-extensions/issues"

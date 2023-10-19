@@ -1,143 +1,216 @@
-export interface DBClient {
-  dbRequest: IDBOpenDBRequest;
-  db: Promise<IDBDatabase>;
-  name: string;
-  version: number;
-  onsuccess(
-    handler?: ((this: IDBRequest<IDBDatabase>, ev: Event) => any) | null
-  ): void;
+export default class Client {
+  _dbs: Record<string, IDBDatabase>;
+  _databaseName: string;
+  currentStore: string;
+  _databaseVersion: number;
 
-  onupgradeneeded(
-    handler?: ((this: IDBRequest<IDBDatabase>, ev: Event) => any) | null
-  ): void;
-  onerror(handler?: () => void): void;
-  add(storeName: string, data: any): Promise<any>;
-  get(
-    storeName: string,
-    callback: (store: IDBObjectStore) => any
-  ): Promise<any>;
-  getCount(storeName: string): Promise<any>;
-}
+  constructor(name: string, version: number, options?: any) {
+    this._dbs = {};
+    this._databaseName = name;
+    this._databaseVersion = version;
+    this.currentStore = "";
 
-export class Client implements DBClient {
-  dbRequest: IDBOpenDBRequest;
-  db: Promise<IDBDatabase>;
-  name: string;
-  version: number;
-  constructor(name: string, version: number) {
     if (!window.indexedDB) {
-      throw new Error("Your browser environment does not support IndexedDB");
+      throw new Error("浏览器不支持indexedDB");
     }
-    if (!name) {
-      throw new Error("Your must pass a database name");
-    }
-    this.name = name;
-    this.version = version;
-    this.dbRequest = window.indexedDB.open(name, version);
-    this.db = new Promise((resolve, reject) => {
-      this.dbRequest.onsuccess = (e: Event) => {
-        resolve((e?.target as any).result);
-      };
-      this.dbRequest.onerror = (err) => {
-        reject(err);
-      };
-    });
-
-    this.db.catch(console.error);
+    this.open(name, version, options);
   }
 
-  onsuccess(
-    handler?: ((this: IDBRequest<IDBDatabase>, ev: Event) => any) | null
-  ) {
-    const _this = this;
-    return new Promise((resolve) => {
-      if (this.db) {
-        return resolve(this.db);
+  open(name: string, version: number, options?: any): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      if (this._dbs && this._dbs[name]) {
+        resolve(this._dbs[name]);
+        return;
       }
-      this.dbRequest.onsuccess = function (e: Event) {
-        _this.db = (e?.target as any).result;
-        handler && handler.call(this, e);
-        resolve(_this.db);
+      let request = window.indexedDB.open(name, version);
+      request.onupgradeneeded = (event) => {
+        let db = (event.target as any).result;
+        this._dbs[name] = db;
+        for (let i in options) {
+          let store: IDBObjectStore;
+
+          const isStoreExist = db.objectStoreNames.contains(
+            options[i].storeName
+          );
+
+          if (isStoreExist) {
+            store = (event?.target as any).transaction.objectStore(
+              options[i].storeName
+            );
+          } else {
+            store = db.createObjectStore(options[i].storeName, {
+              keyPath: "id",
+            });
+          }
+
+          for (let { name, keyPath, unique } of options[i].index) {
+            if (!store.indexNames.contains(name)) {
+              store.createIndex(name, keyPath, { unique });
+            }
+          }
+        }
+        resolve(db);
+      };
+      request.onsuccess = (event) => {
+        const db = (event.target as any).result;
+        this._dbs[name] = db;
+        resolve(db);
+      };
+      request.onerror = (event) => {
+        reject(event);
+        console.error("IndexedDB", event);
       };
     });
   }
 
-  onerror(handler?: (e: Event) => void) {
+  async _getTransaction(storeName: string) {
+    let db: IDBDatabase;
+    if (this._dbs[this._databaseName]) {
+      db = this._dbs[this._databaseName];
+    } else {
+      db = await this.open(this._databaseName, this._databaseVersion || 1);
+    }
+    return db.transaction([storeName], "readwrite");
+  }
+
+  async _getObjectStore(storeName: string) {
+    let transaction = await this._getTransaction(storeName);
+    return transaction.objectStore(storeName);
+  }
+
+  // 获取一个store
+  collection(storeName: string) {
+    this.currentStore = storeName;
+    this._getObjectStore(storeName);
+    return this;
+  }
+
+  async add(data: any) {
+    const store = await this._getObjectStore(this.currentStore);
+    const request = store.add(data);
+
     return new Promise((resolve, reject) => {
-      if (!handler) return resolve(null);
-      this.dbRequest.onerror = function (e: Event) {
-        handler && handler.call(this, e);
-        reject(e);
+      request.onsuccess = function (event) {
+        resolve((event.target as any).result);
+      };
+      request.onerror = (event) => {
+        reject(event);
       };
     });
   }
 
-  onupgradeneeded(
-    handler?: ((this: IDBRequest<IDBDatabase>, ev: Event) => any) | null
-  ) {
-    return new Promise((resolve) => {
-      if (!handler) return resolve(null);
+  // get 使用id查询
+  async get(data: any) {
+    const store = await this._getObjectStore(this.currentStore);
+    const request = store.get(data);
 
-      this.dbRequest.onupgradeneeded = function (e: Event) {
-        handler && handler.call(this, e);
-        resolve(e);
-      };
-    });
-  }
-
-  async add(storeName: string, data: any) {
-    const db = await this.db;
-
-    if (!db) throw new Error("db connect error");
-    const request = db
-      .transaction(storeName, "readwrite")
-      .objectStore(storeName)
-      .add(data);
     return new Promise((resolve, reject) => {
-      request.onsuccess = resolve;
-      request.onerror = reject;
+      request.onsuccess = function (event) {
+        resolve((event.target as any).result);
+      };
+      request.onerror = (event) => {
+        reject(event);
+      };
     });
   }
 
-  async get(
-    storeName: string,
-    callback: (store: IDBObjectStore) => any
-  ): Promise<any> {
-    const db = await this.db;
-    if (!db) throw new Error("db connect error");
-
-    const store = db.transaction(storeName, "readonly").objectStore(storeName);
-
-    return callback(store);
-  }
-
-  async getCount(storeName: string): Promise<any> {
-    const db = await this.db;
-    if (!db) throw new Error("db connect error");
-
-    const store = db.transaction(storeName, "readonly").objectStore(storeName);
-
+  async count() {
+    const store = await this._getObjectStore(this.currentStore);
     const request = store.count();
 
     return new Promise((resolve, reject) => {
-      request.onsuccess = resolve;
-      request.onerror = reject;
+      request.onsuccess = function (event) {
+        resolve((event.target as any).result);
+      };
+      request.onerror = (event) => {
+        reject(event);
+      };
+    });
+  }
+
+  // delete(data) {
+  //     return new Promise((resolve, reject) => {
+  //         this._getObjectStore(this.currentStore).then((objectStore) => {
+  //             const request = objectStore.delete(data);
+  //             request.onsuccess = function (event) {
+  //                 resolve(event.target.result);
+  //             };
+  //             request.onerror = (event) => {
+  //                 reject(event);
+  //             };
+  //         });
+  //     });
+  // }
+
+  // clear(data) {
+  //     return new Promise((resolve, reject) => {
+  //         this._getObjectStore(this.currentStore).then((objectStore) => {
+  //             const request = objectStore.clear(data);
+  //             request.onsuccess = function (event) {
+  //                 resolve(event.target.result);
+  //             };
+  //             request.onerror = (event) => {
+  //                 reject(event);
+  //             };
+  //         });
+  //     });
+  // }
+
+  // put(data) {
+  //     return new Promise((resolve, reject) => {
+  //         this._getObjectStore(this.currentStore).then((objectStore) => {
+  //             const request = objectStore.put(data);
+  //             request.onsuccess = function (event) {
+  //                 resolve(event.target.result);
+  //             };
+  //             request.onerror = (event) => {
+  //                 reject(event);
+  //             };
+  //         });
+  //     });
+  // }
+
+  async find(options: any) {
+    const { cursor, filter } = options;
+
+    const store = await this._getObjectStore(this.currentStore);
+
+    const index = store.index(cursor.index);
+    let request: IDBRequest<IDBCursorWithValue | null>;
+    if (cursor.value) {
+      request = index.get(cursor.value);
+    } else if (cursor.bound && Array.isArray(cursor.bound)) {
+      const bound = cursor.bound as [any, any, boolean, boolean];
+      request = index.openCursor(IDBKeyRange.bound(...bound));
+    }
+
+    return new Promise((resolve, reject) => {
+      let result: any[] = [];
+
+      request.onsuccess = function (event) {
+        const cursor = (event.target as any).result;
+
+        if (cursor) {
+          const data = cursor.value;
+
+          if (filter && Array.isArray(filter)) {
+
+            if (!filter.some((rule: (data: any) => boolean) => !!rule(data))) {
+              cursor.continue();
+              return;
+            }
+          }
+
+          result.push(data);
+          cursor.continue();
+        } else {
+          resolve(result);
+        }
+      };
+
+      request.onerror = (event) => {
+        reject(event);
+      };
     });
   }
 }
-
-let clientInstance: Client | null;
-
-const dbClient = (name: string, version: number = 1) => {
-  if (
-    clientInstance &&
-    clientInstance.name === name &&
-    clientInstance.version === version
-  ) {
-    return clientInstance;
-  } else {
-    return (clientInstance = new Client(name, version));
-  }
-};
-
-export default dbClient;

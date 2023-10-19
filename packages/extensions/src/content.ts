@@ -1,5 +1,5 @@
 import { messageAction, messageType, dbConfig } from "extensions-config";
-import { dbClient } from "indexdb";
+import { Client } from "indexdb";
 
 import nextMessageFlow from "./utils/nextMessageFlow";
 
@@ -13,99 +13,80 @@ const appendDocument = () => {
 };
 
 const handleDataCountRequest = async () => {
-  const client = dbClient(dbConfig.DB_NAME, dbConfig.DB_VERSION);
+  const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
+  const store = db.collection(dbConfig.SCRIPTS_STORE_NAME);
+  // const scriptsRes = (await client?.getCount(
+  //   dbConfig.SCRIPTS_STORE_NAME
+  // )) as any;
+  // const servicesRes = (await client?.getCount(
+  //   dbConfig.SERVICE_STORE_NAME
+  // )) as any;
 
-  const scriptsRes = await client?.getCount(dbConfig.SCRIPTS_STORE_NAME);
-  const servicesRes = await client?.getCount(dbConfig.SERVICE_STORE_NAME);
+  // const total = scriptsRes.target.result + servicesRes.target.result;
 
-  const total = scriptsRes.target.result + servicesRes.target.result;
+  // return {
+  //   response: {
+  //     code: 1,
+  //     total,
+  //   },
+  // };
+};
 
+const handleServiceDataRequest = async (payload: any) => {
+  const { start, end, sourceId } = payload;
+
+  const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
+
+  const store = db.collection(dbConfig.SERVICE_STORE_NAME);
+
+  const data = await store.find({
+    cursor: {
+      index: "createAtIndex",
+      bound: [start, end],
+    },
+    filter: [
+      () => !sourceId,
+      (data: any) =>
+        !!sourceId &&
+        data.serviceName &&
+        data.serviceName.includes(sourceId) &&
+        data.serviceId &&
+        data.serviceId.includes(sourceId),
+    ],
+  });
   return {
     response: {
       code: 1,
-      total,
+      data,
     },
   };
 };
 
-const handleServiceDataRequest = async (payload: any) => {
-  const client = dbClient(dbConfig.DB_NAME, dbConfig.DB_VERSION);
-
-  const { start, end, sourceId } = payload;
-
-  return await client.get(dbConfig.SERVICE_STORE_NAME, (store) => {
-    const createAtIndex = store.index("createAtIndex");
-    const request = createAtIndex.openCursor(IDBKeyRange.bound(start, end));
-    let result: any[] = [];
-
-    return new Promise((resolve, reject) => {
-      request.onsuccess = (e) => {
-        const cursor = (e?.target as any).result;
-        if (cursor) {
-          const data = cursor.value;
-          if (
-            sourceId !== undefined &&
-            data.serviceName &&
-            !data.serviceName.includes(sourceId) &&
-            data.serviceId &&
-            !data.serviceId.includes(sourceId)
-          ) {
-            cursor.continue();
-            return;
-          }
-          result.push(data);
-          cursor.continue();
-        } else {
-          resolve({
-            response: {
-              code: 1,
-              data: result,
-            },
-          });
-        }
-      };
-      request.onerror = reject;
-    });
-  });
-};
-
 const handleScriptDataRequest = async (payload: any) => {
-  const client = dbClient(dbConfig.DB_NAME, dbConfig.DB_VERSION);
-
   const { start, end, sourceId } = payload;
 
-  return await client.get(dbConfig.SCRIPTS_STORE_NAME, (store) => {
-    const createAtIndex = store.index("createAtIndex");
-    const request = createAtIndex.openCursor(IDBKeyRange.bound(start, end));
-    let result: any[] = [];
+  const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
 
-    return new Promise((resolve, reject) => {
-      request.onsuccess = (e) => {
-        const cursor = (e?.target as any).result;
-        if (cursor) {
-          const data = cursor.value;
-          if (
-            sourceId !== undefined &&
-            data.widgetId &&
-            !data.widgetId.includes(sourceId)
-          ) {
-            cursor.continue();
-            return;
-          }
-          result.push(data);
-          cursor.continue();
-        } else {
-          resolve({
-            response: {
-              code: 1,
-              data: result,
-            },
-          });
-        }
-      };
-      request.onerror = reject;
-    });
+  const store = db.collection(dbConfig.SCRIPTS_STORE_NAME);
+
+  const data = await store.find({
+    cursor: {
+      index: "createAtIndex",
+      bound: [start, end],
+    },
+    filter: [
+      () => !sourceId,
+      (data: any) =>
+        !!sourceId && data.widgetId && data.widgetId.includes(sourceId),
+    ],
   });
+
+  return {
+    response: {
+      code: 1,
+      data,
+    },
+  };
 };
 
 const chromeMessageHandler = async (props: MessageData) => {
@@ -123,7 +104,6 @@ const chromeMessageHandler = async (props: MessageData) => {
       ePayload = await handleServiceDataRequest(payload);
     } else if (action === messageAction.REQUEST_SCRIPT_DATA) {
       ePayload = await handleScriptDataRequest(payload);
-      console.log(ePayload)
     }
   }
 

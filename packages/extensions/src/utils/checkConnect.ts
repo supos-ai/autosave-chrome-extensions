@@ -1,7 +1,12 @@
 export default () => {
   try {
     const win = (window as any).top || (window as any);
-    return win.SUPOS !== undefined && win.SUPOS !== null;
+    const html = document.querySelector("html");
+    return (
+      win.SUPOS &&
+      html!.innerHTML.includes("supOS frontend") &&
+      html!.innerHTML.includes("suposTicketForFrontend")
+    );
   } catch {
     return null;
   }

@@ -3,8 +3,8 @@ export default () => {
     const win = (window as any).top || (window as any);
     const html = document.querySelector("html");
     return (
-      win.SUPOS &&
-      html!.innerHTML.includes("supOS frontend") &&
+      !!win.SUPOS ||
+      html!.innerHTML.includes("supOS frontend") ||
       html!.innerHTML.includes("suposTicketForFrontend")
     );
   } catch {

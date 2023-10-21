@@ -3752,6 +3752,7 @@
     "@testing-library/user-event" "^13.5.0"
     "@types/jest" "^27.5.2"
     "@types/node" "^16.18.58"
+    "@types/prismjs" "^1.26.1"
     "@types/react" "^18.2.28"
     "@types/react-dom" "^18.2.13"
     "antd" "^5.10.0"
@@ -3770,11 +3771,12 @@
     "eslint" "^8.3.0"
     "eslint-config-react-app" "^7.0.1"
     "eslint-webpack-plugin" "^3.1.1"
+    "extensions-config" "^1.1.0"
     "file-loader" "^6.2.0"
     "fs-extra" "^10.0.0"
     "html-webpack-plugin" "^5.5.0"
     "identity-obj-proxy" "^3.0.0"
-    "indexdb" "*"
+    "indexdb" "^1.1.0"
     "jest" "^27.4.3"
     "jest-resolve" "^27.4.2"
     "jest-watch-typeahead" "^1.0.0"
@@ -3784,6 +3786,7 @@
     "postcss-loader" "^6.2.1"
     "postcss-normalize" "^10.0.1"
     "postcss-preset-env" "^7.0.1"
+    "prismjs" "^1.29.0"
     "prompts" "^2.4.2"
     "react" "^18.2.0"
     "react-app-polyfill" "^3.0.0"
@@ -6088,11 +6091,11 @@
 
 "extensions@file:D:\\Workspace\\autosave-chrome-extensions\\packages\\extensions":
   "resolved" "file:packages/extensions"
-  "version" "1.1.0"
+  "version" "1.1.1"
   dependencies:
     "@types/chrome" "^0.0.246"
-    "indexdb" "*"
-    "proxy" "*"
+    "extensions-config" "^1.1.0"
+    "indexdb" "^1.1.0"
 
 "external-editor@^3.0.3":
   "integrity" "sha512-hMQ4CX1p1izmuLYyZqLMO/qGNw10wSv9QDCPfzXfyFrOaCSSoRfqE1Kf1s5an66J5JZC62NewG+mK49jOCtQew=="

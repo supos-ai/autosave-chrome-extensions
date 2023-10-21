@@ -1,9 +1,4 @@
-import {
-  fetchProxy,
-  originFetch,
-  XHRProxy,
-  originXHR,
-} from "./utils/proxy/index";
+
 
 import { messageAction, messageType } from "extensions-config";
 
@@ -14,18 +9,9 @@ import checkConnect from "./utils/checkConnect";
 
 import type { MessageData } from "./interface";
 
-const bindInstance = (isConnected: boolean) => {
-  if (isConnected) {
-    window.fetch = fetchProxy;
-    window.XMLHttpRequest = XHRProxy as typeof XMLHttpRequest;
-  } else {
-    window.fetch = originFetch;
-    window.XMLHttpRequest = originXHR as typeof XMLHttpRequest;
-  }
-};
+import bindInstance from "./utils/bindRequestProxy";
 
 // 防止被监控网站自己缓存fetch对象， 所以在资源加载后立即重写fetch方法
-
 bindInstance(true);
 
 const windowMessageHandler = (event: MessageEvent) => {

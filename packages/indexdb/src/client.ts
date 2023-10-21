@@ -1,5 +1,5 @@
 export default class Client {
-  _dbs: Record<string, IDBDatabase>;
+  _dbs: Record<string, Promise<IDBDatabase>>;
   _databaseName: string;
   currentStore: string;
   _databaseVersion: number;
@@ -13,19 +13,16 @@ export default class Client {
     if (!window.indexedDB) {
       throw new Error("浏览器不支持indexedDB");
     }
-    this.open(name, version, options);
+    const db = this.open(name, version, options);
+
+    this._dbs[name] = db;
   }
 
   open(name: string, version: number, options?: any): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
-      if (this._dbs && this._dbs[name]) {
-        resolve(this._dbs[name]);
-        return;
-      }
       let request = window.indexedDB.open(name, version);
       request.onupgradeneeded = (event) => {
         let db = (event.target as any).result;
-        this._dbs[name] = db;
         for (let i in options) {
           let store: IDBObjectStore;
 
@@ -53,7 +50,6 @@ export default class Client {
       };
       request.onsuccess = (event) => {
         const db = (event.target as any).result;
-        this._dbs[name] = db;
         resolve(db);
       };
       request.onerror = (event) => {
@@ -64,12 +60,7 @@ export default class Client {
   }
 
   async _getTransaction(storeName: string) {
-    let db: IDBDatabase;
-    if (this._dbs[this._databaseName]) {
-      db = this._dbs[this._databaseName];
-    } else {
-      db = await this.open(this._databaseName, this._databaseVersion || 1);
-    }
+    let db =  await this._dbs[this._databaseName];
     return db.transaction([storeName], "readwrite");
   }
 
@@ -79,9 +70,9 @@ export default class Client {
   }
 
   // 获取一个store
-  collection(storeName: string) {
+  async collection(storeName: string) {
     this.currentStore = storeName;
-    this._getObjectStore(storeName);
+    await this._getObjectStore(storeName);
     return this;
   }
 
@@ -194,7 +185,6 @@ export default class Client {
           const data = cursor.value;
 
           if (filter && Array.isArray(filter)) {
-
             if (!filter.some((rule: (data: any) => boolean) => !!rule(data))) {
               cursor.continue();
               return;

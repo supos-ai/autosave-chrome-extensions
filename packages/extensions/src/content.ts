@@ -14,7 +14,7 @@ const appendDocument = () => {
 
 const handleDataCountRequest = async () => {
   const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
-  const store = db.collection(dbConfig.SCRIPTS_STORE_NAME);
+  const store = await db.collection(dbConfig.SCRIPTS_STORE_NAME);
   // const scriptsRes = (await client?.getCount(
   //   dbConfig.SCRIPTS_STORE_NAME
   // )) as any;
@@ -37,7 +37,7 @@ const handleServiceDataRequest = async (payload: any) => {
 
   const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
 
-  const store = db.collection(dbConfig.SERVICE_STORE_NAME);
+  const store = await db.collection(dbConfig.SERVICE_STORE_NAME);
 
   const data = await store.find({
     cursor: {
@@ -48,10 +48,8 @@ const handleServiceDataRequest = async (payload: any) => {
       () => !sourceId,
       (data: any) =>
         !!sourceId &&
-        data.serviceName &&
-        data.serviceName.includes(sourceId) &&
-        data.serviceId &&
-        data.serviceId.includes(sourceId),
+        ((data.serviceName && data.serviceName.includes(sourceId)) ||
+          (data.serviceId && data.serviceId.includes(sourceId))),
     ],
   });
   return {
@@ -67,7 +65,7 @@ const handleScriptDataRequest = async (payload: any) => {
 
   const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
 
-  const store = db.collection(dbConfig.SCRIPTS_STORE_NAME);
+  const store = await db.collection(dbConfig.SCRIPTS_STORE_NAME);
 
   const data = await store.find({
     cursor: {
@@ -89,6 +87,28 @@ const handleScriptDataRequest = async (payload: any) => {
   };
 };
 
+// const handleLongMessageConnectToPopup = (payload: {
+//   popupTab: chrome.tabs.Tab;
+// }) => {
+//   const { popupTab } = payload;
+
+//   console.log("content 接收到")
+
+//   chrome.runtime.onConnect.addListener(function(port) {
+//     console.assert(port.name);
+//     port.onMessage.addListener(function(msg) {
+
+//       console.log(msg,"knockknock");
+//       // if (msg.joke === "Knock knock")
+//       //   port.postMessage({question: "Who's there?"});
+//       // else if (msg.answer === "Madame")
+//       //   port.postMessage({question: "Madame who?"});
+//       // else if (msg.answer === "Madame... Bovary")
+//       //   port.postMessage({question: "I don't get it."});
+//     });
+//   });
+// };
+
 const chromeMessageHandler = async (props: MessageData) => {
   const { type } = props;
 
@@ -98,13 +118,6 @@ const chromeMessageHandler = async (props: MessageData) => {
 
   let ePayload: any;
   if (to === "content") {
-    if (action === messageAction.REQUEST_DATA_COUNT) {
-      ePayload = await handleDataCountRequest();
-    } else if (action === messageAction.REQUEST_SERVICE_DATA) {
-      ePayload = await handleServiceDataRequest(payload);
-    } else if (action === messageAction.REQUEST_SCRIPT_DATA) {
-      ePayload = await handleScriptDataRequest(payload);
-    }
   }
 
   const messageFlow = nextMessageFlow(props);
@@ -117,7 +130,7 @@ const chromeMessageHandler = async (props: MessageData) => {
         ...payload,
         ...ePayload,
       },
-    })
+    });
   }
 
   if (messageFlow.to === "service") {
@@ -160,7 +173,30 @@ const windowMessageHandler = async (event: MessageEvent) => {
   }
 };
 
+const popupMessageHandle = (port: chrome.runtime.Port) => {
+  port.onMessage.addListener(async (msg) => {
+    if (port.name !== messageAction.LONG_CONNECT_TO_POPUP) return;
+
+    const { action, payload } = msg;
+    let ePayload: any;
+    if (action === messageAction.REQUEST_SERVICE_DATA) {
+      ePayload = await handleServiceDataRequest(payload);
+    } else if (action === messageAction.REQUEST_SCRIPT_DATA) {
+      ePayload = await handleScriptDataRequest(payload);
+    }
+    port.postMessage({
+      ...msg,
+      payload: {
+        ...payload,
+        ...ePayload,
+      },
+    });
+  });
+};
+
+
 appendDocument();
 
+chrome.runtime.onConnect.addListener(popupMessageHandle);
 chrome.runtime.onMessage.addListener(chromeMessageHandler);
 window.addEventListener("message", windowMessageHandler);

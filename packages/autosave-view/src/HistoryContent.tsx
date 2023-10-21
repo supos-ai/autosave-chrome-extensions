@@ -29,6 +29,8 @@ import {
   requestDataCount,
   requestServiceData,
   requestScriptData,
+  requestLongMessageConnect,
+  establishLongMessageConnect,
 } from "./service";
 
 import type { ColumnsType } from "antd/es/table";
@@ -62,6 +64,7 @@ const HistoryTable: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const destroyMsgRef = useRef<any>(null);
+  const messagePort = useRef<chrome.runtime.Port>();
   const [connectInfo, setConnectInfo] = useState({
     isConnected: false,
     host: null,
@@ -74,43 +77,55 @@ const HistoryTable: React.FC = () => {
   const typeValue = Form.useWatch("type", form);
 
   useEffect(() => {
+    const longMessageConnectHandler = (msg: any) => {
+      const { action, payload } = msg;
+      if (action === messageAction.REQUEST_SCRIPT_DATA) {
+        setDataType("script");
+
+        const { response } = payload;
+
+        if (response && response.code === 1) {
+          setTableData(
+            response.data.map((item: any) => ({ ...item, key: item.id }))
+          );
+        }
+      } else if (action === messageAction.REQUEST_SERVICE_DATA) {
+        setDataType("service");
+
+        const { response } = payload;
+
+        if (response && response.code === 1) {
+          setTableData(
+            response.data.map((item: any) => ({ ...item, key: item.id }))
+          );
+        }
+      }
+
+      setSelectedData(null);
+      setLoading(false);
+    };
+
     receiveMessage((request: MessageData) => {
       if (request.action === messageAction.CHECK_CONNECT_POPUP) {
         setConnectInfo(request.payload);
       }
 
-      if (request.action === messageAction.REQUEST_SCRIPT_DATA) {
-        setDataType("script");
+      if (request.action === messageAction.LONG_CONNECT_TO_POPUP) {
+        const { fromTabId } = request.payload;
+        if (messagePort.current || !fromTabId) return;
 
-        const { response } = request.payload;
-
-        if (response && response.code === 1) {
-          setTableData(
-            response.data.map((item: any) => ({ ...item, key: item.id }))
-          );
-        }
+        messagePort.current = establishLongMessageConnect(
+          fromTabId,
+          longMessageConnectHandler
+        );
       }
-      if (request.action === messageAction.REQUEST_SERVICE_DATA) {
-        setDataType("service");
-
-        const { response } = request.payload;
-
-        if (response && response.code === 1) {
-          setTableData(
-            response.data.map((item: any) => ({ ...item, key: item.id }))
-          );
-        }
-      }
-      setSelectedData(null);
-      setLoading(false);
     });
-
     requestConnectStatus();
-  }, []);
+  }, [setSelectedData, setLoading, receiveMessage]);
 
   useEffect(() => {
     if (!connectInfo.isConnected) return;
-    requestDataCount();
+    requestLongMessageConnect();
   }, [connectInfo]);
 
   const onFinish = async (values: any) => {
@@ -142,10 +157,10 @@ const HistoryTable: React.FC = () => {
       setLoading(false);
     }, 5000);
     if (type === "service") {
-      requestServiceData(payload);
+      requestServiceData(messagePort.current, payload);
     }
     if (type === "script") {
-      requestScriptData(payload);
+      requestScriptData(messagePort.current, payload);
     }
   };
   const onTypeChange = () => {

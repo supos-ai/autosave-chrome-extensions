@@ -28,8 +28,12 @@ const createPopupWindow = async (currentTab: chrome.tabs.Tab) => {
   if (popupConfig.popupWindow) {
     destroyPopUpWindow();
   }
-  popupConfig.popupWindow = await createWindow();
+  const popupWindow = await createWindow();
+
+  popupConfig.popupWindow = popupWindow;
+  return popupWindow;
 };
+
 
 const getPopupWindow = () => popupConfig;
 const resetPopupWindow = () => {
@@ -45,7 +49,11 @@ const destroyPopUpWindow = async () => {
   } catch {}
 };
 
-const setIconWithConnectStatus = (isConnected: boolean, tabId?: number) => {
+const setIconWithConnectStatus = (
+  isConnected: boolean | null,
+  tabId?: number
+) => {
+  if (isConnected == null) return;
   if (isConnected) {
     chrome.action.setIcon({ path: "icons/128a.png", tabId });
   } else {
@@ -63,9 +71,15 @@ const handlerChromeMessage = async (
 
   const { action, payload, from, to } = props;
 
+  let ePayload: any;
   if (to === "service") {
     if (action === messageAction.CHECK_CONNECT_ACTION) {
       setIconWithConnectStatus(payload.isConnected, sender.tab?.id);
+    } else if (action === messageAction.LONG_CONNECT_TO_POPUP) {
+      const { fromTabId } = getPopupWindow();
+      ePayload = {
+        fromTabId,
+      };
     }
   }
 
@@ -75,14 +89,17 @@ const handlerChromeMessage = async (
     const { fromTabId, popupWindow } = getPopupWindow();
 
     if (popupWindow === null) return;
-
     try {
       await chrome.tabs.sendMessage(fromTabId!, {
         ...props,
         ...messageFlow,
+        payload: {
+          ...payload,
+          ...ePayload,
+        },
       });
     } catch (err) {
-      console.error(`[ ${messageFlow.from} =>  ${messageFlow.to}]`, err);
+      console.debug(`[ ${messageFlow.from} =>  ${messageFlow.to}]`, err);
     }
   }
 
@@ -91,83 +108,16 @@ const handlerChromeMessage = async (
       await chrome.runtime.sendMessage({
         ...props,
         ...messageFlow,
+        payload: {
+          ...payload,
+          ...ePayload,
+        },
       });
     } catch (err) {
-      console.error(`[ ${messageFlow.from} =>  ${messageFlow.to}]`, err);
+      console.debug(`[ ${messageFlow.from} =>  ${messageFlow.to}]`, err);
     }
   }
-
-  /**
-   * CHECK_CONNECT
-   * 1.修改 icon
-   * 2.通知 popup 连接状态以及 host 等信息
-   *
-   * 想要知道消息从哪个 tabId 发送过来的，可以使用 sender.tab.id
-   */
-  // if (
-  //   chromeActionType === actionType.CHECK_CONNECT &&
-  //   chromeMessageType === messageType.CONTENT_TO_SERVICE
-  // ) {
-  //   setIconWithConnectStatus(payload.isConnected, sender.tab?.id);
-  // }
-
-  // if (
-  //   chromeActionType === actionType.CHECK_CONNECT_POPUP &&
-  //   chromeMessageType === messageType.CONTENT_TO_SERVICE
-  // ) {
-  //   const { popupWindow } = getPopupWindow();
-  //   noticeConnectStatusToPopup(popupWindow, payload);
-  // }
-
-  // if (
-  //   chromeActionType === actionType.REQUEST_DATA_COUNT &&
-  //   chromeMessageType === messageType.CONTENT_TO_SERVICE
-  // ) {
-  //   const { popupWindow } = getPopupWindow();
-  //   noticeTotalCountToPopup(popupWindow, payload);
-  // }
-
-  // /**
-  //  * popup => service => content => document => content => service => popup
-  //  */
-  // if (
-  //   chromeActionType === actionType.CHECK_CONNECT_POPUP &&
-  //   chromeMessageType === messageType.POPUP_TO_SERVICE
-  // ) {
-  //   const { fromTabId } = getPopupWindow();
-
-  //   requestPopUpConnect(fromTabId!);
-  // }
-
-  // if (
-  //   chromeActionType === actionType.REQUEST_DATA_COUNT &&
-  //   chromeMessageType === messageType.POPUP_TO_SERVICE
-  // ) {
-  //   const { fromTabId } = getPopupWindow();
-
-  //   requestDataCount(fromTabId!);
-  // }
 };
-
-// const handlerOnTabActivated = async (activeInfo: chrome.tabs.TabActiveInfo) => {
-//   const tabId = activeInfo.tabId;
-
-//   // Send a message to the content script of the activated tab
-//   const activeTab = await chrome.tabs.get(tabId);
-
-//   console.log(activeTab, "activeTab");
-//   if (
-//     !activeTab.url?.startsWith("http") &&
-//     !activeTab.url?.startsWith("https") &&
-//     !activeTab.pendingUrl?.startsWith("http") &&
-//     !activeTab.pendingUrl?.startsWith("https")
-//   ) {
-//     setIconWithConnectStatus(false);
-//     return;
-//   }
-
-//   requestSupOSConnect(tabId);
-// };
 
 const handlerOnActionClick = async () => {
   /**
@@ -177,8 +127,12 @@ const handlerOnActionClick = async () => {
    */
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   const currentTab = tabs[0];
+  const popupWindow = await createPopupWindow(currentTab);
 
-  createPopupWindow(currentTab);
+  // const popupTabs = popupWindow.tabs;
+  // const popupTab = popupTabs?.[0];
+
+  // createPopupMessageConnect(currentTab,popupTab);
 };
 
 // chrome.runtime.onInstalled.addListener(() => {

@@ -1,7 +1,8 @@
 {
   "name": "extensions",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "supOS scripts and services autosave chrome extensions.",
+  "private": true,
   "keywords": [
     "supos",
     "autosave",
@@ -31,7 +32,7 @@
   },
   "dependencies": {
     "@types/chrome": "^0.0.246",
-    "extensions-config": "*",
-    "indexdb": "*"
+    "extensions-config": "^1.1.0",
+    "indexdb": "^1.1.0"
   }
 }

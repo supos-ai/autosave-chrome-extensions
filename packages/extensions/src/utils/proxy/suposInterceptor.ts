@@ -35,7 +35,7 @@ export const propsHandler = (...args: Parameters<typeof fetch>) => {
 
 const saveScripts = async (dataQueue: ScriptsDataProps[]) => {
   const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
-  const store = db.collection(dbConfig.SCRIPTS_STORE_NAME);
+  const store = await db.collection(dbConfig.SCRIPTS_STORE_NAME);
 
   dataQueue.forEach(async (data) => {
     try {
@@ -45,9 +45,9 @@ const saveScripts = async (dataQueue: ScriptsDataProps[]) => {
     }
   });
 };
-const saveService = (dataQueue: ServiceDataProps[]) => {
+const saveService = async (dataQueue: ServiceDataProps[]) => {
   const db = new Client(dbConfig.DB_NAME, dbConfig.DB_VERSION);
-  const store = db.collection(dbConfig.SCRIPTS_STORE_NAME);
+  const store = await db.collection(dbConfig.SERVICE_STORE_NAME);
 
   dataQueue.forEach(async (data) => {
     try {

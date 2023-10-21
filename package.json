@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "dev": "lerna run dev --parallel",
-    "build": "lerna run build"
+    "build": "lerna run build",
+    "publish":"lerna publish"
   },
   "dependencies": {},
   "devDependencies": {

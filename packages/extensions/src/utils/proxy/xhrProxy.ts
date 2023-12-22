@@ -1,4 +1,4 @@
-import type { Interceptor } from "./interface";
+import type { BeforeInterceptor } from "./interface";
 
 export const originXHR = window.XMLHttpRequest;
 
@@ -8,7 +8,7 @@ export class XHRProxy extends XMLHttpRequest {
 
   body: Document | XMLHttpRequestBodyInit | null = null;
 
-  static _beforeInterceptorQueue: Interceptor[] = [];
+  static _beforeInterceptorQueue: BeforeInterceptor[] = [];
 
   constructor() {
     super();
@@ -67,7 +67,7 @@ export class XHRProxy extends XMLHttpRequest {
     };
   }
 
-  static _beforeInterceptor = (beforeInterceptor: Interceptor) => {
+  static _beforeInterceptor = (beforeInterceptor: BeforeInterceptor) => {
     XHRProxy._beforeInterceptorQueue.push(beforeInterceptor);
   };
 }

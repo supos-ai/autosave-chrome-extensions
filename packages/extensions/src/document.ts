@@ -1,5 +1,3 @@
-
-
 import { messageAction, messageType } from "extensions-config";
 
 import nextMessageFlow from "./utils/nextMessageFlow";
@@ -55,12 +53,50 @@ window.addEventListener("message", windowMessageHandler);
  * 页面加载后检测是否是 supOS 网站， 并发送消息通知 service_worker
  */
 
+const initAntMessage = () => {
+  const style = document.createElement("style");
+  style.id = "temp-message-style";
+  style.innerHTML = `
+    .ant-message {display:none !important}
+  `;
+  document.head.appendChild(style);
+};
+
+const autoSave = () => {
+  try {
+    initAntMessage();
+    (window as any).editor.save();
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+let timer: NodeJS.Timeout = 0 as unknown as NodeJS.Timeout;
+
+const isDesignPage = () => !!document.querySelector("canvas.editCanvas");
+
+const initPageAutoSave = async () => {
+  //  等待页面加载完成
+  await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+
+  if (!isDesignPage()) return;
+
+  clearAutoSave();
+
+  // timer = setInterval(autoSave, 10 * 1000);
+};
+
+const clearAutoSave = () => clearTimeout(timer);
+
 const handleSupOSConnectOnWindowLoad = () => {
   const url = new URL(location.href);
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
   const isConnected = checkConnect();
 
-  if (isConnected) db.init();
+  if (isConnected) {
+    db.init();
+    // initPageAutoSave();
+  }
   bindInstance(isConnected);
 
   window.postMessage({
@@ -77,3 +113,7 @@ const handleSupOSConnectOnWindowLoad = () => {
 };
 
 window.addEventListener("load", handleSupOSConnectOnWindowLoad);
+
+window.addEventListener("beforeunload", () => {
+  clearAutoSave();
+});

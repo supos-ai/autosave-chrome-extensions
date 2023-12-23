@@ -88,17 +88,78 @@ const initPageAutoSave = async () => {
 
 const clearAutoSave = () => clearTimeout(timer);
 
-const handleSupOSConnectOnWindowLoad = () => {
-  const url = new URL(location.href);
-  if (url.protocol !== "http:" && url.protocol !== "https:") return;
-  const isConnected = checkConnect();
+const initTestMode = async (isConnected: boolean | null) => {
+  if (!isConnected) return;
 
-  if (isConnected) {
-    db.init();
-    // initPageAutoSave();
+  if (/\/workflow\/Layout_/.test(location.href)) {
+    window.postMessage({
+      type: messageType.MESSAGE_TYPE,
+      action: messageAction.CHECK_TEST_MODE,
+      path: "document.content.service",
+      from: "document",
+      to: "content",
+      payload: {
+        testMode: true,
+      },
+    });
+  } else {
+    window.postMessage({
+      type: messageType.MESSAGE_TYPE,
+      action: messageAction.CHECK_TEST_MODE,
+      path: "document.content.service",
+      from: "document",
+      to: "content",
+      payload: {
+        testMode: false,
+      },
+    });
+
+    return;
   }
-  bindInstance(isConnected);
 
+  const { instanceId } = await fetch(
+    "/inter-api/supos-tenant-manager/v1/tenant",
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("ticket")}`,
+      },
+    }
+  ).then<{ instanceId: number }>((res) => res.json());
+
+  const bindHTEditorDm = (editor: any) => {
+    const add = editor.dm.add;
+
+    (initTestMode as any).add = add;
+
+    if (!add.length) return;
+
+    setTimeout(() => {
+      editor.dm.add = function autoRewriteAdd() {
+        var node = arguments[0];
+
+        node.setAttrObject({
+          ...node.getAttrObject(),
+          renderId: (+instanceId).toString(36),
+        });
+        return add.apply(this, arguments);
+      };
+    }, 2000);
+  };
+
+  const testEditor = () => {
+    if ((window as any).editor) {
+      bindHTEditorDm((window as any).editor);
+      return;
+    } else if ((window as any).COMPVIEW?.editor) {
+      bindHTEditorDm((window as any).COMPVIEW?.editor);
+      return;
+    }
+    requestAnimationFrame(testEditor);
+  };
+  testEditor();
+};
+
+const initConnectState = (isConnected: boolean | null) => {
   window.postMessage({
     type: messageType.MESSAGE_TYPE,
     action: messageAction.CHECK_CONNECT_ACTION,
@@ -110,6 +171,34 @@ const handleSupOSConnectOnWindowLoad = () => {
       host: isConnected ? location.host : null,
     },
   });
+};
+
+const handlerRouterChange = () => {
+  if ((handlerRouterChange as any).isBind) return;
+  (handlerRouterChange as any).isBind = true;
+  window.addEventListener("hashchange", () => {
+    console.log("hashchange");
+    initTestMode(true);
+  });
+};
+const handleSupOSConnectOnWindowLoad = () => {
+  const url = new URL(location.href);
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+  const isConnected = checkConnect();
+  if (isConnected) {
+    db.init();
+    // initPageAutoSave();
+  }
+  bindInstance(isConnected);
+  initConnectState(isConnected);
+  handlerRouterChange();
+  setTimeout(() => initTestMode(isConnected));
+};
+
+const proxyHandler = {
+  set(target: Window, key: string, value: any, receiver: any) {
+    return Reflect.set(target, key, value, receiver);
+  },
 };
 
 window.addEventListener("load", handleSupOSConnectOnWindowLoad);

@@ -34,7 +34,6 @@ const createPopupWindow = async (currentTab: chrome.tabs.Tab) => {
   return popupWindow;
 };
 
-
 const getPopupWindow = () => popupConfig;
 const resetPopupWindow = () => {
   popupConfig = {
@@ -61,6 +60,14 @@ const setIconWithConnectStatus = (
   }
 };
 
+const setIconWithTestMode = (testMode: boolean, tabId?: number) => {
+  if (testMode) {
+    chrome.action.setIcon({ path: "icons/128r.png", tabId });
+  } else {
+    chrome.action.setIcon({ path: "icons/128a.png", tabId });
+  }
+};
+
 const handlerChromeMessage = async (
   props: MessageData,
   sender: chrome.runtime.MessageSender
@@ -73,6 +80,7 @@ const handlerChromeMessage = async (
 
   let ePayload: any;
   if (to === "service") {
+    console.log(action);
     if (action === messageAction.CHECK_CONNECT_ACTION) {
       setIconWithConnectStatus(payload.isConnected, sender.tab?.id);
     } else if (action === messageAction.LONG_CONNECT_TO_POPUP) {
@@ -80,6 +88,8 @@ const handlerChromeMessage = async (
       ePayload = {
         fromTabId,
       };
+    } else if (action === messageAction.CHECK_TEST_MODE) {
+      setIconWithTestMode(payload.testMode, sender.tab?.id);
     }
   }
 

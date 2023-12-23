@@ -80,7 +80,6 @@ const handlerChromeMessage = async (
 
   let ePayload: any;
   if (to === "service") {
-    console.log(action);
     if (action === messageAction.CHECK_CONNECT_ACTION) {
       setIconWithConnectStatus(payload.isConnected, sender.tab?.id);
     } else if (action === messageAction.LONG_CONNECT_TO_POPUP) {
@@ -89,7 +88,10 @@ const handlerChromeMessage = async (
         fromTabId,
       };
     } else if (action === messageAction.CHECK_TEST_MODE) {
-      setIconWithTestMode(payload.testMode, sender.tab?.id);
+      setTimeout(
+        () => setIconWithTestMode(payload.testMode, sender.tab?.id),
+        200
+      );
     }
   }
 

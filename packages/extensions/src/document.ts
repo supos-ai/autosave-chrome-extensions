@@ -173,11 +173,11 @@ const initConnectState = (isConnected: boolean | null) => {
   });
 };
 
-const handlerRouterChange = () => {
+const handlerRouterChange = (isConnected: boolean | null) => {
+  if (!isConnected) return;
   if ((handlerRouterChange as any).isBind) return;
   (handlerRouterChange as any).isBind = true;
   window.addEventListener("hashchange", () => {
-    console.log("hashchange");
     initTestMode(true);
   });
 };
@@ -191,18 +191,12 @@ const handleSupOSConnectOnWindowLoad = () => {
   }
   bindInstance(isConnected);
   initConnectState(isConnected);
-  handlerRouterChange();
-  setTimeout(() => initTestMode(isConnected));
-};
-
-const proxyHandler = {
-  set(target: Window, key: string, value: any, receiver: any) {
-    return Reflect.set(target, key, value, receiver);
-  },
+  handlerRouterChange(isConnected);
+  initTestMode(isConnected);
 };
 
 window.addEventListener("load", handleSupOSConnectOnWindowLoad);
 
-window.addEventListener("beforeunload", () => {
-  clearAutoSave();
-});
+// window.addEventListener("beforeunload", () => {
+//   clearAutoSave();
+// });

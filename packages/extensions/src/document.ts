@@ -127,19 +127,17 @@ const initTestMode = async (isConnected: boolean | null) => {
   ).then<{ instanceId: number }>((res) => res.json());
 
   const bindHTEditorDm = (editor: any) => {
-    const add = editor.dm.add;
-
-    (initTestMode as any).add = add;
-
-    if (!add.length) return;
 
     setTimeout(() => {
+      const add = editor.dm.add;
+  
+      if (!add.length) return;
       editor.dm.add = function autoRewriteAdd() {
         var node = arguments[0];
 
         node.setAttrObject({
-          ...node.getAttrObject(),
           renderId: (+instanceId).toString(36),
+          ...node.getAttrObject(),
         });
         return add.apply(this, arguments);
       };
@@ -147,7 +145,9 @@ const initTestMode = async (isConnected: boolean | null) => {
   };
 
   const testEditor = () => {
+    
     if ((window as any).editor) {
+      console.log((window as any).editor)
       bindHTEditorDm((window as any).editor);
       return;
     } else if ((window as any).COMPVIEW?.editor) {

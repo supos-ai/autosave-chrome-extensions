@@ -53,6 +53,7 @@ const setIconWithConnectStatus = (
   tabId?: number
 ) => {
   if (isConnected == null) return;
+  console.log("有其他的事件影响换图表么");
   if (isConnected) {
     chrome.action.setIcon({ path: "icons/128a.png", tabId });
   } else {
@@ -89,7 +90,10 @@ const handlerChromeMessage = async (
         fromTabId,
       };
     } else if (action === messageAction.CHECK_TEST_MODE) {
-      setIconWithTestMode(payload.testMode, sender.tab?.id);
+      setTimeout(
+        () => setIconWithTestMode(payload.testMode, sender.tab?.id),
+        200
+      );
     }
   }
 

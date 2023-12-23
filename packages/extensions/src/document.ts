@@ -91,6 +91,7 @@ const clearAutoSave = () => clearTimeout(timer);
 const initTestMode = async (isConnected: boolean | null) => {
   if (!isConnected) return;
 
+  console.log("initTestMode",window.location)
   if (/\/workflow\/Layout_/.test(location.href)) {
     window.postMessage({
       type: messageType.MESSAGE_TYPE,
@@ -103,6 +104,7 @@ const initTestMode = async (isConnected: boolean | null) => {
       },
     });
   } else {
+    console.log(window.location);
     window.postMessage({
       type: messageType.MESSAGE_TYPE,
       action: messageAction.CHECK_TEST_MODE,
@@ -173,11 +175,17 @@ const initConnectState = (isConnected: boolean | null) => {
   });
 };
 
-const handlerRouterChange = () => {
+const handlerRouterChange = (isConnected: boolean | null) => {
+  if (!isConnected) return;
   if ((handlerRouterChange as any).isBind) return;
   (handlerRouterChange as any).isBind = true;
   window.addEventListener("hashchange", () => {
-    console.log("hashchange");
+    console.log(
+      "handlerRouterChange",
+      window.location,
+      (handlerRouterChange as any).isBind
+    );
+
     initTestMode(true);
   });
 };
@@ -185,24 +193,19 @@ const handleSupOSConnectOnWindowLoad = () => {
   const url = new URL(location.href);
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
   const isConnected = checkConnect();
+  console.log("这个不可能是false", isConnected);
   if (isConnected) {
     db.init();
     // initPageAutoSave();
   }
   bindInstance(isConnected);
   initConnectState(isConnected);
-  handlerRouterChange();
-  setTimeout(() => initTestMode(isConnected));
-};
-
-const proxyHandler = {
-  set(target: Window, key: string, value: any, receiver: any) {
-    return Reflect.set(target, key, value, receiver);
-  },
+  handlerRouterChange(isConnected);
+  initTestMode(isConnected);
 };
 
 window.addEventListener("load", handleSupOSConnectOnWindowLoad);
 
-window.addEventListener("beforeunload", () => {
-  clearAutoSave();
-});
+// window.addEventListener("beforeunload", () => {
+//   clearAutoSave();
+// });

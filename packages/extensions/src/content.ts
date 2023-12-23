@@ -195,7 +195,6 @@ const popupMessageHandle = (port: chrome.runtime.Port) => {
 
 
 appendDocument();
-console.log(1)
 chrome.runtime.onConnect.addListener(popupMessageHandle);
 chrome.runtime.onMessage.addListener(chromeMessageHandler);
 window.addEventListener("message", windowMessageHandler);

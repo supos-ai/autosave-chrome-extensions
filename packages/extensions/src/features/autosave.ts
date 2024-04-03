@@ -1,6 +1,4 @@
 import { StatePromises } from "../interface";
-import { Payload } from "./index";
-import { featuresList } from "./index";
 const isDesignPage = () => !!document.querySelector("canvas.editCanvas");
 
 const delay = (time: number = 1000) =>

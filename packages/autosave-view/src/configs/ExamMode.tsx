@@ -1,23 +1,23 @@
-import { Tooltip, Row, Col, Switch, InputNumber } from "antd";
+import { Tooltip, Row, Col, Switch } from "antd";
 
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 
 import { requestConfigChange } from "../service";
 
-const ExpandMenuConfig: React.FC = () => {
+const ExamModeConfig: React.FC = () => {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    chrome.storage.local.get(["expandMenu"], (result) => {
-      const { expandMenu } = result;
-      setChecked(expandMenu.checked);
+    chrome.storage.local.get(["examMode"], (result) => {
+      const { examMode } = result;
+      setChecked(examMode.checked);
     });
   }, [setChecked]);
 
   const onSwitch = (checked: boolean) => {
     requestConfigChange({
-      type: "expandMenu",
+      type: "examMode",
       config: {
         checked,
       },
@@ -28,10 +28,10 @@ const ExpandMenuConfig: React.FC = () => {
   return (
     <Row className="config-row">
       <Col span={20}>
-        <span className="config-title">禁止菜单折叠</span>
+        <span className="config-title">考试模式</span>
         <Tooltip
           placement="top"
-          title="普通视图中的菜单，当一个菜单打开的时候，会收起其他的同级菜单，菜单过长的时候会滚动菜单不便查看，开启此功能会禁止同级菜单折叠。"
+          title="参加评级考试的同学请开启此配置,在组态期刷新页面后图标变为红色表示考试模式生效。"
         >
           <QuestionCircleOutlined style={{ marginLeft: 10 }} />
         </Tooltip>
@@ -43,4 +43,4 @@ const ExpandMenuConfig: React.FC = () => {
   );
 };
 
-export default ExpandMenuConfig;
+export default ExamModeConfig;

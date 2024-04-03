@@ -14,6 +14,7 @@
     "publish": "lerna publish"
   },
   "dependencies": {
+    "@rollup/plugin-typescript": "^11.1.5",
     "yarn": "^1.22.19"
   },
   "devDependencies": {

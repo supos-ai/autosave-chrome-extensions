@@ -8,12 +8,17 @@ import {
 
 import {
   inject as expandMenuInject,
-  unInject as expandMenuAutosave,
+  unInject as expandMenuUnInject,
 } from "./expandMenu";
+
+import {
+  inject as examModeInject,
+  unInject as examModeUnInject,
+} from "./examMode";
 
 import { StatePromises } from "../interface";
 
-const featuresList = ["autosave", "expandMenu"] as const;
+const featuresList = ["autosave", "expandMenu", "examMode"] as const;
 
 export type Payload<T> = {
   type: T;
@@ -29,7 +34,8 @@ type InjectFunction = (
 
 const featuresMap: Record<(typeof featuresList)[number], InjectFunction[]> = {
   autosave: [autosaveInject, unInjectAutosave],
-  expandMenu: [expandMenuInject, expandMenuAutosave],
+  expandMenu: [expandMenuInject, expandMenuUnInject],
+  examMode: [examModeInject, examModeUnInject],
 };
 
 const injectFeature = (

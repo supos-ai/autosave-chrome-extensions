@@ -60,6 +60,22 @@ window.addEventListener("message", windowMessageHandler);
  * 页面加载后检测是否是 supOS 网站， 并发送消息通知 service_worker
  */
 
+let timer: NodeJS.Timeout = 0 as unknown as NodeJS.Timeout;
+
+const initConnectState = (isConnected: boolean | null) => {
+  window.postMessage({
+    type: messageType.MESSAGE_TYPE,
+    action: messageAction.CHECK_CONNECT_ACTION,
+    path: "document.content.service",
+    from: "document",
+    to: "content",
+    payload: {
+      isConnected,
+      host: isConnected ? location.host : null,
+    },
+  });
+};
+
 const handleSupOSConnectOnWindowLoad = () => {
   const url = new URL(location.href);
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
@@ -77,18 +93,7 @@ const handleSupOSConnectOnWindowLoad = () => {
     );
   }
   bindInstance(isConnected);
-
-  window.postMessage({
-    type: messageType.MESSAGE_TYPE,
-    action: messageAction.CHECK_CONNECT_ACTION,
-    path: "document.content.service",
-    from: "document",
-    to: "content",
-    payload: {
-      isConnected,
-      host: isConnected ? location.host : null,
-    },
-  });
+  initConnectState(isConnected);
 };
 
 window.addEventListener("load", handleSupOSConnectOnWindowLoad);

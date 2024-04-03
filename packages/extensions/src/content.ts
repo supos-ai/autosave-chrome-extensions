@@ -150,7 +150,6 @@ const chromeMessageHandler = async (props: MessageData) => {
 };
 const windowMessageHandler = async (event: MessageEvent) => {
   // 来自其他窗口的消息忽略
-
   if (event.source !== window) return;
 
   if (!event.data) return;
@@ -214,7 +213,6 @@ const popupMessageHandle = (port: chrome.runtime.Port) => {
 };
 
 appendDocument();
-
 chrome.runtime.onConnect.addListener(popupMessageHandle);
 chrome.runtime.onMessage.addListener(chromeMessageHandler);
 window.addEventListener("message", windowMessageHandler);

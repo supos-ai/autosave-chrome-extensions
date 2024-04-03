@@ -82,6 +82,17 @@ const requestScriptData = (port: chrome.runtime.Port | void, payload: any) => {
   });
 };
 
+const requestConfigChange = (payload:any) => {
+  chrome.runtime.sendMessage({
+    type: messageType.MESSAGE_TYPE,
+    action: messageAction.CONFIG_CHANGE,
+    path: "popup.service.content.document",
+    from: "popup",
+    to: "service",
+    payload
+  });
+}
+
 export {
   receiveMessage,
   requestConnectStatus,
@@ -90,4 +101,5 @@ export {
   requestScriptData,
   requestLongMessageConnect,
   establishLongMessageConnect,
+  requestConfigChange
 };

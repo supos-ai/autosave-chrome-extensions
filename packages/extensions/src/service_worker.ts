@@ -34,7 +34,6 @@ const createPopupWindow = async (currentTab: chrome.tabs.Tab) => {
   return popupWindow;
 };
 
-
 const getPopupWindow = () => popupConfig;
 const resetPopupWindow = () => {
   popupConfig = {
@@ -66,7 +65,6 @@ const handlerChromeMessage = async (
   sender: chrome.runtime.MessageSender
 ) => {
   const { type } = props;
-
   if (type !== messageType.MESSAGE_TYPE) return;
 
   const { action, payload, from, to } = props;
@@ -80,6 +78,8 @@ const handlerChromeMessage = async (
       ePayload = {
         fromTabId,
       };
+    } else if (action == messageAction.CONFIG_CHANGE) {
+      await chrome.storage.local.set({ [payload.type]: payload.config });
     }
   }
 

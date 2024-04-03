@@ -5,14 +5,18 @@ import nextMessageFlow from "./utils/nextMessageFlow";
 import * as db from "./utils/db";
 import checkConnect from "./utils/checkConnect";
 
-import type { MessageData } from "./interface";
+import type { MessageData, StatePromises } from "./interface";
 
 import bindInstance from "./utils/bindRequestProxy";
+
+import { injectFeature, featuresList } from "./features";
 
 // 防止被监控网站自己缓存fetch对象， 所以在资源加载后立即重写fetch方法
 bindInstance(true);
 
-const windowMessageHandler = (event: MessageEvent) => {
+const statePromises: StatePromises = { load: Promise.resolve() };
+
+const windowMessageHandler = async (event: MessageEvent) => {
   if (event.source !== window) return;
 
   if (!event.data) return;
@@ -30,6 +34,9 @@ const windowMessageHandler = (event: MessageEvent) => {
         isConnected,
         host: isConnected ? location.host : null,
       };
+    }
+    if (action === messageAction.CONFIG_CHANGE) {
+      // injectFeature(payload, statePromises);
     }
   }
 
@@ -53,49 +60,21 @@ window.addEventListener("message", windowMessageHandler);
  * 页面加载后检测是否是 supOS 网站， 并发送消息通知 service_worker
  */
 
-const initAntMessage = () => {
-  const style = document.createElement("style");
-  style.id = "temp-message-style";
-  style.innerHTML = `
-    .ant-message {display:none !important}
-  `;
-  document.head.appendChild(style);
-};
-
-const autoSave = () => {
-  try {
-    initAntMessage();
-    (window as any).editor.save();
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-let timer: NodeJS.Timeout = 0 as unknown as NodeJS.Timeout;
-
-const isDesignPage = () => !!document.querySelector("canvas.editCanvas");
-
-const initPageAutoSave = async () => {
-  //  等待页面加载完成
-  await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
-
-  if (!isDesignPage()) return;
-
-  clearAutoSave();
-
-  // timer = setInterval(autoSave, 10 * 1000);
-};
-
-const clearAutoSave = () => clearTimeout(timer);
-
 const handleSupOSConnectOnWindowLoad = () => {
   const url = new URL(location.href);
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
   const isConnected = checkConnect();
 
+  statePromises.load = statePromises.load.then(() =>
+    Promise.resolve(isConnected)
+  );
+
   if (isConnected) {
     db.init();
-    // initPageAutoSave();
+    injectFeature(
+      featuresList.map((f) => ({ type: f })),
+      statePromises
+    );
   }
   bindInstance(isConnected);
 
@@ -113,7 +92,3 @@ const handleSupOSConnectOnWindowLoad = () => {
 };
 
 window.addEventListener("load", handleSupOSConnectOnWindowLoad);
-
-window.addEventListener("beforeunload", () => {
-  clearAutoSave();
-});

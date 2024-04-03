@@ -19,6 +19,17 @@
   right: 20px;
   bottom: 20px;
   cursor: pointer;
+  font-size: 40px;
+  color: #d4380d;
+}
+
+.setting-icon {
+  position: absolute;
+  right: 70px;
+  bottom: 20px;
+  cursor: pointer;
+  font-size: 40px;
+  color: #1677ff;
 }
 
 .content-box {
@@ -39,7 +50,7 @@
   height: 100%;
 }
 
-.code-box-empty{
+.code-box-empty {
   padding: 0 14px;
   display: flex;
   align-items: center;
@@ -76,3 +87,15 @@
 .view-table-content .ant-table-header{
   display: none !important;
 } */
+
+
+.config-title {
+  font-size: 16px;
+  color:rgba(0, 0, 0, 0.88)
+}
+.config-row {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  margin-bottom: 10px;
+}

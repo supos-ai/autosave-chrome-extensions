@@ -1,62 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Layout, Input, Divider, Drawer, Tag, List } from "antd";
 
-import { GithubOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import {
+  GithubOutlined,
+  QuestionCircleOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
 import HistoryContent from "./HistoryContent";
+import FaqDrawer from "./FaqDrawer";
+import ConfigsDrawer from "./ConfigsDrawer";
 
 import "./App.css";
 import "prismjs/themes/prism.css";
 
 const { Footer, Sider, Content } = Layout;
 
-const faqData = [
-  {
-    title: "数据保存在哪里？",
-    description: (
-      <div>
-        <strong>IndexedDB</strong>, 通过F12打开开发者工具,点击
-        <strong> 应用/application </strong>标签, 在存储菜单中找到 IndexedDB,
-        数据库的名字为 <strong> SupOS </strong>,
-        如果点击删除数据库数据将会丢失,并在下一次载入的时候新建数据库。
-      </div>
-    ),
-    avatar: "🍕",
-  },
-];
+export type DrawerRefProps = {
+  onClose: () => void;
+  onOpen: () => void;
+};
+
 const App: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  const drawerOpen = () => {
-    setOpen(true);
-  };
-  const drawerClose = () => {
-    setOpen(false);
-  };
+  const faqRef = React.useRef<DrawerRefProps>(null);
+  const configsRef = React.useRef<DrawerRefProps>(null);
 
   return (
     <Layout className="layout">
       <Content className="content">
         <HistoryContent />
-        <Drawer
-          title="FAQ"
-          placement="right"
-          onClose={drawerClose}
-          open={open}
-          closeIcon={null}
-        >
-          <List
-            itemLayout="horizontal"
-            dataSource={faqData}
-            renderItem={(item, index) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={item.avatar}
-                  title={item.title}
-                  description={item.description}
-                />
-              </List.Item>
-            )}
-          />
-        </Drawer>
+        <FaqDrawer ref={faqRef} />
+        <ConfigsDrawer ref={configsRef} />
       </Content>
 
       <Footer className="footer">
@@ -74,11 +47,15 @@ const App: React.FC = () => {
             Github
           </Tag>
         </div>
+        <SettingOutlined
+          className="setting-icon"
+          onClick={() => configsRef.current?.onOpen()}
+        />
         <QuestionCircleOutlined
-          color="volcano"
-          style={{ fontSize: 40, color: "#d4380d" }}
           className="faq-icon"
-          onClick={drawerOpen}
+          onClick={() => {
+            faqRef.current?.onOpen();
+          }}
         />
       </Footer>
     </Layout>

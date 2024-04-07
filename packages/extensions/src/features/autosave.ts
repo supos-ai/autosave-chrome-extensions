@@ -16,14 +16,9 @@ let timer: NodeJS.Timeout;
 const inject = (
   config: Record<string, any> & {
     checked: boolean;
-  },
-  statePromises: StatePromises
+  }
 ) => {
-  return statePromises.load
-    .then((isConnected) => {
-      if (!isConnected) return;
-      return delay(10 * 1000);
-    })
+  return delay(10 * 1000)
     .then(() => {
       if (!isDesignPage) return;
 
@@ -39,8 +34,7 @@ const inject = (
 const unInject = (
   config: Record<string, any> & {
     checked: boolean;
-  },
-  statePromises: StatePromises
+  }
 ) => {
   return Promise.resolve().then(() => clearInterval(timer));
 };

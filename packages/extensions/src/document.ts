@@ -29,7 +29,7 @@ const windowMessageHandler = async (event: MessageEvent) => {
 
   if (to === "document") {
     if (action === messageAction.CHECK_CONNECT_POPUP) {
-      const isConnected = checkConnect();
+      const isConnected = await checkConnect();
       ePayload = {
         isConnected,
         host: isConnected ? location.host : null,
@@ -79,21 +79,15 @@ const initConnectState = (isConnected: boolean | null) => {
 const handleSupOSConnectOnWindowLoad = () => {
   const url = new URL(location.href);
   if (url.protocol !== "http:" && url.protocol !== "https:") return;
-  const isConnected = checkConnect();
 
-  statePromises.load = statePromises.load.then(() =>
-    Promise.resolve(isConnected)
-  );
-
-  if (isConnected) {
-    db.init();
-    injectFeature(
-      featuresList.map((f) => ({ type: f })),
-      statePromises
-    );
-  }
-  bindInstance(isConnected);
-  initConnectState(isConnected);
+  checkConnect().then((isConnected) => {
+    if (isConnected) {
+      db.init();
+      injectFeature(featuresList.map((f) => ({ type: f })));
+    }
+    bindInstance(isConnected);
+    initConnectState(isConnected);
+  });
 };
 
 window.addEventListener("load", handleSupOSConnectOnWindowLoad);

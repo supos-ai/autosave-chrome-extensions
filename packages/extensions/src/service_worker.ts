@@ -60,8 +60,13 @@ const setIconWithConnectStatus = (
   }
 };
 
-const setIconWithTestMode = (testMode: boolean, tabId?: number) => {
-  if (testMode) {
+const setIconWithTestMode = (
+  payload: { testMode: boolean; approvalMode: boolean },
+  tabId?: number
+) => {
+  if (payload.approvalMode) {
+    chrome.action.setIcon({ path: "icons/128g.png", tabId });
+  } else if (payload.testMode) {
     chrome.action.setIcon({ path: "icons/128r.png", tabId });
   } else {
     chrome.action.setIcon({ path: "icons/128a.png", tabId });
@@ -89,10 +94,7 @@ const handlerChromeMessage = async (
     } else if (action == messageAction.CONFIG_CHANGE) {
       await chrome.storage.local.set({ [payload.type]: payload.config });
     } else if (action === messageAction.CHECK_TEST_MODE) {
-      setTimeout(
-        () => setIconWithTestMode(payload.testMode, sender.tab?.id),
-        200
-      );
+      setTimeout(() => setIconWithTestMode(payload, sender.tab?.id), 200);
     }
   }
 

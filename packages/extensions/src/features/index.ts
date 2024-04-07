@@ -16,8 +16,6 @@ import {
   unInject as examModeUnInject,
 } from "./examMode";
 
-import { StatePromises } from "../interface";
-
 const featuresList = ["autosave", "expandMenu", "examMode"] as const;
 
 export type Payload<T> = {
@@ -28,8 +26,7 @@ export type Payload<T> = {
 type InjectFunction = (
   payloads: Record<string, any> & {
     checked: boolean;
-  },
-  statePromises: StatePromises
+  }
 ) => Promise<any>;
 
 const featuresMap: Record<(typeof featuresList)[number], InjectFunction[]> = {
@@ -39,8 +36,7 @@ const featuresMap: Record<(typeof featuresList)[number], InjectFunction[]> = {
 };
 
 const injectFeature = (
-  payloads: Payload<(typeof featuresList)[number]>[] = [],
-  statePromises: StatePromises
+  payloads: Payload<(typeof featuresList)[number]>[] = []
 ) => {
   // 请求storage中的配置项
 
@@ -64,10 +60,7 @@ const injectFeature = (
           if (!config) return;
 
           const { checked } = config;
-          (checked ? featuresMap[type][0] : featuresMap[type][1])(
-            config,
-            statePromises
-          );
+          (checked ? featuresMap[type][0] : featuresMap[type][1])(config);
         });
 
         window.removeEventListener("message", handle);
@@ -92,10 +85,7 @@ const injectFeature = (
 
       const { checked } = config;
 
-      (checked ? featuresMap[type][0] : featuresMap[type][1])(
-        config,
-        statePromises
-      );
+      (checked ? featuresMap[type][0] : featuresMap[type][1])(config);
     });
   }
 };

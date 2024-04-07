@@ -1,9 +1,12 @@
 import { StatePromises } from "../interface";
-import { Payload } from "./index";
-import { featuresList } from "./index";
+
 const isCurrentNode = (parent: HTMLElement) =>
   typeof parent.querySelector === "function" &&
   !!parent.querySelector('span[title="收藏夹"]');
+
+const isVirtualMenu = () =>
+  !!document.querySelector("#menu") &&
+  !!document.querySelector(".sup-rc-virtual-tree");
 
 let currentTarget: HTMLElement;
 
@@ -37,7 +40,7 @@ const cleanCustomCLass = (node: HTMLElement) => {
   node.classList.remove("autosave-ext-submenu-close");
   node.classList.remove("autosave-ext-submenu-open");
 };
-const observeMenuList = (root: HTMLElement | null) => {
+const observeLegacyMenu = (root: HTMLElement | null) => {
   if (!root) return;
   const config = {
     attributes: true,
@@ -150,6 +153,27 @@ const deepBind = (node: HTMLElement) => {
   }
 };
 
+const observeVirtualMenu = (root: HTMLElement | null) => {
+  if (!root) return;
+
+  const config = {
+    attributes: true,
+    attributeOldValue: true,
+    childList: true,
+    subtree: true,
+  };
+
+  const handle: MutationCallback = (mutationsList, observer) => {
+    for (let mutation of mutationsList) {
+      const target = mutation.target as HTMLElement;
+    }
+  };
+
+  const observer = new MutationObserver(handle);
+
+  observer.observe(root, config);
+};
+
 const observeMenu = () => {
   let timer: NodeJS.Timeout;
   const root = document.querySelector("#root")!;
@@ -161,13 +185,16 @@ const observeMenu = () => {
         const addNodes = mutation.addedNodes;
         if (addNodes.length) {
           for (let node of addNodes) {
-            deepBind(node as HTMLElement);
+            if (!isVirtualMenu()) deepBind(node as HTMLElement);
             if (!isFindMenuRoot && isCurrentNode(node as HTMLElement)) {
-              // clearTimeout(timer);
-              // observer.disconnect();
               isFindMenuRoot = true;
               const root = node.parentElement;
-              observeMenuList(root);
+
+              if (isVirtualMenu()) {
+                observeVirtualMenu(root);
+              } else {
+                observeLegacyMenu(root);
+              }
             }
           }
         }
@@ -185,12 +212,10 @@ let timer: NodeJS.Timeout;
 const inject = (
   config: Record<string, any> & {
     checked: boolean;
-  },
-  statePromises: StatePromises
+  }
 ) => {
-  return statePromises.load
-    .then((isConnected) => {
-      if (!isConnected) return;
+  return Promise.resolve()
+    .then(() => {
       overwriteStyleSheet();
       observeMenu();
     })
@@ -200,8 +225,7 @@ const inject = (
 const unInject = (
   config: Record<string, any> & {
     checked: boolean;
-  },
-  statePromises: StatePromises
+  }
 ) => {
   return Promise.resolve().then(() => clearInterval(timer));
 };

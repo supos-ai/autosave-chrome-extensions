@@ -49,7 +49,15 @@ const AutoSaveConfig: React.FC = () => {
         <span className="config-title">自动保存</span>
         <Tooltip
           placement="top"
-          title="只在设计器组态页面生效，自动在指定时间间隔后保存页面数据。"
+          title={
+            <span>
+              只在设计器组态页面生效，自动在指定时间间隔后保存页面数据。
+              <br />
+              <strong>
+                v4.0+ 平台的保存功能会导致页面位置重置，不建议开启
+              </strong>
+            </span>
+          }
         >
           <QuestionCircleOutlined style={{ marginLeft: 10 }} />
         </Tooltip>

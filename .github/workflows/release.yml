@@ -40,6 +40,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./packages/extensions/build/service_worker.js
-          asset_name: asset-name.zip
+          asset_path: ./packages/extensions/build
+          asset_name: autosave-chrome-extensions.zip
           asset_content_type: application/zip

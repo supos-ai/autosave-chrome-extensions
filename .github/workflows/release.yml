@@ -15,7 +15,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "16"
+          node-version: "18"
 
       - name: Install dependencies
         run: yarn
@@ -24,7 +24,9 @@ jobs:
         run: yarn build
 
       - name: Extract tag name
-        run: echo "TAG_NAME=$(echo $GITHUB_REF | sed 's/refs\/tags\///')" >> $GITHUB_ENV
+        id: extract_tag
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+        shell: bash
 
       - name: Create Release
         id: create_release
@@ -32,8 +34,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.TAG_NAME }}
-          release_name: SupOS AutoSave Chrome Extension ${{ env.TAG_NAME }}
+          tag_name: ${{ steps.extract_tag.outputs.tag }}
+          release_name: SupOS AutoSave Chrome Extension ${{ steps.extract_tag.outputs.tag }}
           draft: false
           prerelease: false
 

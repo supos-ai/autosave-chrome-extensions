@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Layout, Input, Divider, Drawer, Tag, List } from "antd";
+import React from "react";
+import { Layout, Tag } from "antd";
 
 import {
   GithubOutlined,
@@ -13,7 +13,7 @@ import ConfigsDrawer from "./ConfigsDrawer";
 import "./App.css";
 import "prismjs/themes/prism.css";
 
-const { Footer, Sider, Content } = Layout;
+const { Footer, Content } = Layout;
 
 export type DrawerRefProps = {
   onClose: () => void;

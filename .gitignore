@@ -1,3 +1,6 @@
-node_modules/
-build/
-test
+node_modules
+build
+
+package-lock.json
+yarn-error.log
+yarn.lock

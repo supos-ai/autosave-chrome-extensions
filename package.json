@@ -10,8 +10,7 @@
   ],
   "scripts": {
     "dev": "lerna run dev --parallel",
-    "build": "lerna run build",
-    "publish": "lerna publish"
+    "build": "lerna run build"
   },
   "dependencies": {
     "@rollup/plugin-typescript": "^11.1.5",

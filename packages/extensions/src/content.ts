@@ -150,26 +150,44 @@ const chromeMessageHandler = async (props: MessageData) => {
 };
 const windowMessageHandler = async (event: MessageEvent) => {
   // 来自其他窗口的消息忽略
-
   if (event.source !== window) return;
 
   if (!event.data) return;
 
   if (event.data.type !== messageType.MESSAGE_TYPE) return;
 
+  const { to, from, action, payload } = event.data;
+  let ePayload;
+  if (to === "content") {
+    if (action === messageAction.REQUEST_CONFIG_STORAGE) {
+      try {
+        ePayload = await chrome.storage.local.get([...payload]);
+      } catch {}
+    }
+  }
   const messageFlow = nextMessageFlow(event.data);
 
-  try {
-    await chrome.runtime.sendMessage({
+  if (messageFlow.to === "document") {
+    window.postMessage({
       ...event.data,
       ...messageFlow,
+      payload: ePayload,
     });
-  } catch (err) {
-    console.debug(
-      `[ ${messageFlow.from} =>  ${messageFlow.to}]`,
-      event.data,
-      err
-    );
+  }
+
+  if (messageFlow.to === "service") {
+    try {
+      await chrome.runtime.sendMessage({
+        ...event.data,
+        ...messageFlow,
+      });
+    } catch (err) {
+      console.debug(
+        `[ ${messageFlow.from} =>  ${messageFlow.to}]`,
+        event.data,
+        err
+      );
+    }
   }
 };
 
@@ -194,9 +212,7 @@ const popupMessageHandle = (port: chrome.runtime.Port) => {
   });
 };
 
-
 appendDocument();
-
 chrome.runtime.onConnect.addListener(popupMessageHandle);
 chrome.runtime.onMessage.addListener(chromeMessageHandler);
 window.addEventListener("message", windowMessageHandler);

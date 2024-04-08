@@ -13,3 +13,7 @@ export interface MessageData {
 }
 
 export type MessageFlow = Pick<MessageData, "path" | "from" | "to">;
+
+export type StatePromises = {
+  load: Promise<any>;
+};

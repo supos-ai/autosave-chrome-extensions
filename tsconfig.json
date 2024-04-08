@@ -8,5 +8,9 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["packages/**/*.ts"],
+  "include": [
+    "packages/**/*.ts",
+    "node_modules/extensions-config/src/*",
+    "node_modules/indexdb/src/*"
+  ]
 }

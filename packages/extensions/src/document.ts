@@ -1,5 +1,3 @@
-
-
 import { messageAction, messageType } from "extensions-config";
 
 import nextMessageFlow from "./utils/nextMessageFlow";
@@ -7,14 +5,18 @@ import nextMessageFlow from "./utils/nextMessageFlow";
 import * as db from "./utils/db";
 import checkConnect from "./utils/checkConnect";
 
-import type { MessageData } from "./interface";
+import type { MessageData, StatePromises } from "./interface";
 
 import bindInstance from "./utils/bindRequestProxy";
+
+import { injectFeature, featuresList } from "./features";
 
 // 防止被监控网站自己缓存fetch对象， 所以在资源加载后立即重写fetch方法
 bindInstance(true);
 
-const windowMessageHandler = (event: MessageEvent) => {
+const statePromises: StatePromises = { load: Promise.resolve() };
+
+const windowMessageHandler = async (event: MessageEvent) => {
   if (event.source !== window) return;
 
   if (!event.data) return;
@@ -27,11 +29,14 @@ const windowMessageHandler = (event: MessageEvent) => {
 
   if (to === "document") {
     if (action === messageAction.CHECK_CONNECT_POPUP) {
-      const isConnected = checkConnect();
+      const isConnected = await checkConnect();
       ePayload = {
         isConnected,
         host: isConnected ? location.host : null,
       };
+    }
+    if (action === messageAction.CONFIG_CHANGE) {
+      // injectFeature(payload, statePromises);
     }
   }
 
@@ -55,14 +60,9 @@ window.addEventListener("message", windowMessageHandler);
  * 页面加载后检测是否是 supOS 网站， 并发送消息通知 service_worker
  */
 
-const handleSupOSConnectOnWindowLoad = () => {
-  const url = new URL(location.href);
-  if (url.protocol !== "http:" && url.protocol !== "https:") return;
-  const isConnected = checkConnect();
+let timer: NodeJS.Timeout = 0 as unknown as NodeJS.Timeout;
 
-  if (isConnected) db.init();
-  bindInstance(isConnected);
-
+const initConnectState = (isConnected: boolean | null) => {
   window.postMessage({
     type: messageType.MESSAGE_TYPE,
     action: messageAction.CHECK_CONNECT_ACTION,
@@ -73,6 +73,20 @@ const handleSupOSConnectOnWindowLoad = () => {
       isConnected,
       host: isConnected ? location.host : null,
     },
+  });
+};
+
+const handleSupOSConnectOnWindowLoad = () => {
+  const url = new URL(location.href);
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+
+  checkConnect().then((isConnected) => {
+    if (isConnected) {
+      db.init();
+      injectFeature(featuresList.map((f) => ({ type: f })));
+    }
+    bindInstance(isConnected);
+    initConnectState(isConnected);
   });
 };
 

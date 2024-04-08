@@ -25,7 +25,7 @@
     "64": "icons/64.png",
     "128": "icons/128.png"
   },
-  "permissions": ["activeTab","scripting", "tabs","webNavigation"],
+  "permissions": ["activeTab","scripting", "tabs","webNavigation","storage"],
   "host_permissions": ["*://*/*"],
   "web_accessible_resources": [
     {

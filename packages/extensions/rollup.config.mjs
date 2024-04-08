@@ -1,7 +1,7 @@
 import terser from "@rollup/plugin-terser";
 import copy from "rollup-plugin-copy";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
+import typescript from 'rollup-plugin-typescript2';
 
 export default [
   {
@@ -20,8 +20,11 @@ export default [
         ],
       }),
       terser(),
+      nodeResolve({
+        moduleDirectories: ["node_modules"],
+        extensions: [".ts", ".js", ".tsx", ".jsx"],
+      }),
       typescript(),
-      nodeResolve(),
       {
         buildStart() {
           this.addWatchFile("./src/manifest.json");
@@ -36,7 +39,14 @@ export default [
       format: "iife",
       name: "content",
     },
-    plugins: [terser(), typescript(), nodeResolve()],
+    plugins: [
+      terser(),
+      nodeResolve({
+        moduleDirectories: ["node_modules"],
+        extensions: [".ts", ".js", ".tsx", ".jsx"],
+      }),
+      typescript(),
+    ],
   },
   {
     input: "src/document.ts",
@@ -45,6 +55,13 @@ export default [
       format: "iife",
       name: "document",
     },
-    plugins: [typescript(), terser(), nodeResolve()],
+    plugins: [
+      terser(),
+      nodeResolve({
+        moduleDirectories: ["node_modules"],
+        extensions: [".ts", ".js", ".tsx", ".jsx"],
+      }),
+      typescript(),
+    ],
   },
 ];

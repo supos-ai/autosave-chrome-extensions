@@ -11,14 +11,16 @@
   "scripts": {
     "dev": "lerna run dev --parallel",
     "build": "lerna run build",
-    "publish":"lerna publish"
+    "publish": "lerna publish"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@rollup/plugin-typescript": "^11.1.5",
+    "yarn": "^1.22.19"
+  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-node-resolve": "^15.2.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.4",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.8.0",
     "jest": "^29.7.0",
@@ -27,6 +29,9 @@
     "rimraf": "^5.0.4",
     "rollup": "^3.29.4",
     "rollup-plugin-copy": "^3.5.0",
-    "ts-jest": "^29.1.1"
+    "rollup-plugin-typescript2": "^0.36.0",
+    "ts-jest": "^29.1.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2"
   }
 }

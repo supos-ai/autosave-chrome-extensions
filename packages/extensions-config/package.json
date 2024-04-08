@@ -10,8 +10,8 @@
   "author": "sunzhiqi <sunzhiqi@live.com>",
   "homepage": "https://github.com/supos-ai/autosave-chrome-extensions#readme",
   "license": "ISC",
-  "main": "build/index.js",
-  "types": "./build/types/index.d.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "directories": {
     "lib": "src"
   },

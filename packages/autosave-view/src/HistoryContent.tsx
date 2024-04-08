@@ -26,7 +26,6 @@ import { CheckCircleTwoTone, CopyTwoTone } from "@ant-design/icons";
 import {
   receiveMessage,
   requestConnectStatus,
-  requestDataCount,
   requestServiceData,
   requestScriptData,
   requestLongMessageConnect,
@@ -121,7 +120,7 @@ const HistoryTable: React.FC = () => {
       }
     });
     requestConnectStatus();
-  }, [setSelectedData, setLoading, receiveMessage]);
+  }, [setSelectedData, setLoading]);
 
   useEffect(() => {
     if (!connectInfo.isConnected) return;

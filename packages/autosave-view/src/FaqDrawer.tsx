@@ -1,7 +1,7 @@
-import { Layout, Input, Divider, Drawer, Tag, List } from "antd";
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { Drawer, List } from "antd";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 
-import {DrawerRefProps} from './App'
+import { DrawerRefProps } from "./App";
 
 const faqData = [
   {
@@ -18,8 +18,9 @@ const faqData = [
   },
 ];
 
-
-const FaqDrawer: React.ForwardRefExoticComponent<React.RefAttributes<DrawerRefProps>> = forwardRef((props, ref) => {
+const FaqDrawer: React.ForwardRefExoticComponent<
+  React.RefAttributes<DrawerRefProps>
+> = forwardRef((props, ref) => {
   const [open, setOpen] = useState(false);
 
   const onClose = () => setOpen(false);
@@ -28,7 +29,7 @@ const FaqDrawer: React.ForwardRefExoticComponent<React.RefAttributes<DrawerRefPr
     ref,
     () => ({
       onClose,
-      onOpen
+      onOpen,
     }),
     []
   );

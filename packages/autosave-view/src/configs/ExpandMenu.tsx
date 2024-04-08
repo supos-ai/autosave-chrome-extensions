@@ -1,4 +1,4 @@
-import { Tooltip, Row, Col, Switch, InputNumber } from "antd";
+import { Tooltip, Row, Col, Switch } from "antd";
 
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";

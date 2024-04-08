@@ -11,27 +11,15 @@ let popupConfig: {
   popupWindow: null,
   fromTabId: -1,
 };
-const createWindow = async () => {
+const createWindow = async (hash = "") => {
   return await chrome.windows.create({
-    url: "app/index.html",
+    url: `app/index.html${hash}`,
     type: "panel",
     width: 1400,
     height: 840,
     top: 100,
     left: 150,
   });
-};
-const createPopupWindow = async (currentTab: chrome.tabs.Tab) => {
-  if (currentTab) {
-    popupConfig.fromTabId = currentTab.id;
-  }
-  if (popupConfig.popupWindow) {
-    destroyPopUpWindow();
-  }
-  const popupWindow = await createWindow();
-
-  popupConfig.popupWindow = popupWindow;
-  return popupWindow;
 };
 
 const getPopupWindow = () => popupConfig;
@@ -95,6 +83,8 @@ const handlerChromeMessage = async (
       await chrome.storage.local.set({ [payload.type]: payload.config });
     } else if (action === messageAction.CHECK_TEST_MODE) {
       setTimeout(() => setIconWithTestMode(payload, sender.tab?.id), 200);
+    } else if (action === messageAction.POPUP_HELPER) {
+      onPopupAction(payload.type);
     }
   }
 
@@ -142,12 +132,36 @@ const handlerOnActionClick = async () => {
    */
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   const currentTab = tabs[0];
-  const popupWindow = await createPopupWindow(currentTab);
+
+  if (currentTab) {
+    popupConfig.fromTabId = currentTab.id;
+  }
+  if (popupConfig.popupWindow) {
+    destroyPopUpWindow();
+  }
+  const popupWindow = await createWindow();
+
+  popupConfig.popupWindow = popupWindow;
 
   // const popupTabs = popupWindow.tabs;
   // const popupTab = popupTabs?.[0];
 
   // createPopupMessageConnect(currentTab,popupTab);
+};
+
+const onPopupAction = async (type: string) => {
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  const currentTab = tabs[0];
+
+  if (currentTab) {
+    popupConfig.fromTabId = currentTab.id;
+  }
+  if (popupConfig.popupWindow) {
+    destroyPopUpWindow();
+  }
+  const popupWindow = await createWindow(`#/${type}/`);
+
+  popupConfig.popupWindow = popupWindow;
 };
 
 // chrome.runtime.onInstalled.addListener(() => {

@@ -16,7 +16,10 @@ import {
   unInject as examModeUnInject,
 } from "./examMode";
 
-const featuresList = ["autosave", "expandMenu", "examMode"] as const;
+import {
+  inject as oodmHelperInject,
+  unInject as oodmHelperUnInject,
+} from "./oodmHelper";
 
 export type Payload<T> = {
   type: T;
@@ -29,16 +32,19 @@ type InjectFunction = (
   }
 ) => Promise<any>;
 
-const featuresMap: Record<(typeof featuresList)[number], InjectFunction[]> = {
+const featuresMap = {
   autosave: [autosaveInject, unInjectAutosave],
   expandMenu: [expandMenuInject, expandMenuUnInject],
   examMode: [examModeInject, examModeUnInject],
+  oodmHelper: [oodmHelperInject, oodmHelperUnInject],
 };
 
-const injectFeature = (
-  payloads: Payload<(typeof featuresList)[number]>[] = []
-) => {
+const injectFeature = () => {
   // 请求storage中的配置项
+  const payloads = Object.keys(featuresMap).map((t) => ({
+    type: t,
+    config: null,
+  }));
 
   if (payloads.every((payload) => !payload.config)) {
     const handle = (event: MessageEvent) => {
@@ -60,7 +66,9 @@ const injectFeature = (
           if (!config) return;
 
           const { checked } = config;
-          (checked ? featuresMap[type][0] : featuresMap[type][1])(config);
+          (checked
+            ? featuresMap[type as keyof typeof featuresMap][0]
+            : featuresMap[type as keyof typeof featuresMap][1])(config);
         });
 
         window.removeEventListener("message", handle);
@@ -85,9 +93,11 @@ const injectFeature = (
 
       const { checked } = config;
 
-      (checked ? featuresMap[type][0] : featuresMap[type][1])(config);
+      (checked
+        ? featuresMap[type as keyof typeof featuresMap][0]
+        : featuresMap[type as keyof typeof featuresMap][1])(config);
     });
   }
 };
 
-export { injectFeature, featuresList };
+export { injectFeature };

@@ -5,16 +5,14 @@ import nextMessageFlow from "./utils/nextMessageFlow";
 import * as db from "./utils/db";
 import checkConnect from "./utils/checkConnect";
 
-import type { MessageData, StatePromises } from "./interface";
+import type { MessageData } from "./interface";
 
 import bindInstance from "./utils/bindRequestProxy";
 
-import { injectFeature, featuresList } from "./features";
+import { injectFeature } from "./features";
 
 // 防止被监控网站自己缓存fetch对象， 所以在资源加载后立即重写fetch方法
 bindInstance(true);
-
-const statePromises: StatePromises = { load: Promise.resolve() };
 
 const windowMessageHandler = async (event: MessageEvent) => {
   if (event.source !== window) return;
@@ -83,7 +81,7 @@ const handleSupOSConnectOnWindowLoad = () => {
   checkConnect().then((isConnected) => {
     if (isConnected) {
       db.init();
-      injectFeature(featuresList.map((f) => ({ type: f })));
+      injectFeature();
     }
     bindInstance(isConnected);
     initConnectState(isConnected);

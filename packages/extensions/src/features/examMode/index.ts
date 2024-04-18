@@ -19,7 +19,7 @@ interface Init {
   __autosave_examMode__: boolean;
 }
 
-const instanceIdPromise = fetch("/inter-api/supos-tenant-manager/v1/tenant", {
+const getInstanceId = () => fetch("/inter-api/supos-tenant-manager/v1/tenant", {
   headers: {
     Authorization: `Bearer ${localStorage.getItem("ticket")}`,
   },
@@ -79,7 +79,7 @@ const detectCodeBox = () => {
 };
 
 const initTestMode = async () => {
-  const { instanceId } = await instanceIdPromise;
+  const { instanceId } = await getInstanceId();
 
   // const bindHTEditorDm = (editor: any) => {
   //   const { dm, add } = editor;
@@ -168,7 +168,7 @@ const initApprovalMode = async (
 
     if (!mergedPageInfo) return;
 
-    const { instanceId } = await instanceIdPromise;
+    const { instanceId } = await getInstanceId();
     const unsafeNodes = filterUnsafeNode(nodes, instanceId);
     renderUnsafeInformation(unsafeNodes, mergedPageInfo);
   } catch (err) {

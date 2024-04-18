@@ -106,7 +106,7 @@ export const renderUnsafeInformation = (
     label.innerHTML = `${node.p.tag || node.p.displayName} / ${
       !node.a.renderId || !decode(node.a.renderId)
         ? "无实例ID"
-        : decode(node.a.renderId)
+        : `异常 ${decode(node.a.renderId)}`
     }`;
 
     return label;

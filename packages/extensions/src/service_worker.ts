@@ -139,7 +139,7 @@ const handlerOnActionClick = async () => {
   if (popupConfig.popupWindow) {
     destroyPopUpWindow();
   }
-  const popupWindow = await createWindow(`#/helper/service`);
+  const popupWindow = await createWindow();
 
   popupConfig.popupWindow = popupWindow;
 
@@ -159,7 +159,7 @@ const onPopupAction = async (type: string) => {
   if (popupConfig.popupWindow) {
     destroyPopUpWindow();
   }
-  const popupWindow = await createWindow(`#/${type}/`);
+  const popupWindow = await createWindow(`#/helper/${type}`);
 
   popupConfig.popupWindow = popupWindow;
 };

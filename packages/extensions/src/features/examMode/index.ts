@@ -19,17 +19,18 @@ interface Init {
   __autosave_examMode__: boolean;
 }
 
-const getInstanceId = () => fetch("/inter-api/supos-tenant-manager/v1/tenant", {
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("ticket")}`,
-  },
-})
-  .then((res) => res.json())
-  .catch(() => ({ instanceId: "1000000000000000" }));
+const getInstanceId = () =>
+  fetch("/inter-api/supos-tenant-manager/v1/tenant", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("ticket")}`,
+    },
+  })
+    .then((res) => res.json())
+    .catch(() => ({ instanceId: "1000000000000000" }));
 
 const fetchPage = retry(
   (): Promise<any> =>
-    fetch(`/api/compose/manage/pages/${getPageId()}`, {
+    fetch(`/api/compose/manage/pages/${getPageId()}?kind=free&isDraft=true`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("ticket")}`,
       },
@@ -155,6 +156,8 @@ const initApprovalMode = async (
 ) => {
   try {
     const { layouts, layout } = await fetchPage();
+
+    console.log(layouts, layout);
     const [page] = layouts;
 
     const { context: contextString } = page;

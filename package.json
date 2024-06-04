@@ -1,6 +1,5 @@
 {
   "name": "autosave-chrome-extensions",
-  "version": "1.0.0",
   "private": true,
   "repository": "git@github.com:supos-ai/autosave-chrome-extensions.git",
   "author": "sunzhiqi <sunzhiqi@live.com>",

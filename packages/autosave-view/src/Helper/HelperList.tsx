@@ -22,7 +22,7 @@ const NameList = () => {
         itemLayout="horizontal"
         dataSource={[
           {
-            title: "Ant Design Title wegwej1",
+            title: "Ant Design Title 222",
             content: "xxx",
           },
           {
@@ -34,7 +34,7 @@ const NameList = () => {
             content: "xxx",
           },
           {
-            title: "Ant Design Title 4",
+            title: "Ant Design Title fffffffffffffffffffffffffffffffffffffffffff",
             content: "xxx",
           },
           {

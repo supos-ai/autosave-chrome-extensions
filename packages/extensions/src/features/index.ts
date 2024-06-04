@@ -36,7 +36,7 @@ const featuresMap = {
   autosave: [autosaveInject, unInjectAutosave],
   expandMenu: [expandMenuInject, expandMenuUnInject],
   examMode: [examModeInject, examModeUnInject],
-  oodmHelper: [oodmHelperInject, oodmHelperUnInject],
+  // oodmHelper: [oodmHelperInject, oodmHelperUnInject],
 };
 
 const injectFeature = () => {

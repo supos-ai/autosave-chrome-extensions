@@ -160,9 +160,7 @@ const windowMessageHandler = async (event: MessageEvent) => {
   let ePayload;
   if (to === "content") {
     if (action === messageAction.REQUEST_CONFIG_STORAGE) {
-      try {
-        ePayload = await chrome.storage.local.get([...payload]);
-      } catch {}
+      ePayload = await chrome.storage.local.get([...payload]);
     }
   }
   const messageFlow = nextMessageFlow(event.data);

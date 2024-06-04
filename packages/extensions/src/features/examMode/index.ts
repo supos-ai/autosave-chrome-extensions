@@ -19,17 +19,18 @@ interface Init {
   __autosave_examMode__: boolean;
 }
 
-const instanceIdPromise = fetch("/inter-api/supos-tenant-manager/v1/tenant", {
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("ticket")}`,
-  },
-})
-  .then((res) => res.json())
-  .catch(() => ({ instanceId: "1000000000000000" }));
+const getInstanceId = () =>
+  fetch("/inter-api/supos-tenant-manager/v1/tenant", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("ticket")}`,
+    },
+  })
+    .then((res) => res.json())
+    .catch(() => ({ instanceId: "1000000000000000" }));
 
 const fetchPage = retry(
   (): Promise<any> =>
-    fetch(`/api/compose/manage/pages/${getPageId()}`, {
+    fetch(`/api/compose/manage/pages/${getPageId()}?kind=free&isDraft=true`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("ticket")}`,
       },
@@ -79,7 +80,7 @@ const detectCodeBox = () => {
 };
 
 const initTestMode = async () => {
-  const { instanceId } = await instanceIdPromise;
+  const { instanceId } = await getInstanceId();
 
   // const bindHTEditorDm = (editor: any) => {
   //   const { dm, add } = editor;
@@ -155,6 +156,8 @@ const initApprovalMode = async (
 ) => {
   try {
     const { layouts, layout } = await fetchPage();
+
+    console.log(layouts, layout);
     const [page] = layouts;
 
     const { context: contextString } = page;
@@ -168,7 +171,7 @@ const initApprovalMode = async (
 
     if (!mergedPageInfo) return;
 
-    const { instanceId } = await instanceIdPromise;
+    const { instanceId } = await getInstanceId();
     const unsafeNodes = filterUnsafeNode(nodes, instanceId);
     renderUnsafeInformation(unsafeNodes, mergedPageInfo);
   } catch (err) {

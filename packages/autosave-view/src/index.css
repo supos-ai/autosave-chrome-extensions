@@ -1,0 +1,105 @@
+#webpack-dev-server-client-overlay {
+  display: none !important;
+}
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* border-image: linear-gradient(115deg, #4fcf70, #fad648, #a767e5, #12bcfe, #44ce7b) 1 1; */
+  box-sizing: border-box;
+}
+.content {
+  flex: 1;
+  position: relative;
+}
+.footer {
+  border-top: 1px solid rgba(5, 5, 5, 0.06);
+}
+.footer .content {
+  text-align: center;
+}
+
+.faq-icon {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  cursor: pointer;
+  font-size: 40px;
+  color: #d4380d;
+}
+
+.setting-icon {
+  position: absolute;
+  right: 70px;
+  bottom: 20px;
+  cursor: pointer;
+  font-size: 40px;
+  color: #1677ff;
+}
+
+.content-box {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+}
+
+.resize-content {
+  height: 100%;
+  display: flex;
+}
+
+.resize-content .left,
+.resize-content .right,
+.resize-content .resize-divider {
+  height: 100%;
+}
+
+.code-box-empty {
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 274px);
+  background: #fff;
+  overflow: auto;
+  border-radius: 4px;
+}
+.code-box {
+  padding: 0 14px;
+  height: calc(100vh - 274px);
+  background: #fff;
+  overflow: auto;
+  border-radius: 4px;
+}
+.show-code-button {
+  cursor: pointer;
+  color: #1677ff;
+  user-select: none;
+}
+.cell-content {
+  height: 28px;
+  line-height: 28px;
+}
+.action-icon {
+  cursor: pointer;
+}
+/* 
+  .view-table-header .ant-table-tbody{
+    display: none !important;
+  }
+  
+  .view-table-content .ant-table-header{
+    display: none !important;
+  } */
+
+.config-title {
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.88);
+}
+.config-row {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  margin-bottom: 10px;
+}
